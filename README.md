@@ -123,7 +123,7 @@ php artisan serve
 
 ```
 
-ឥឡូវនេះ កម្មវិធីនឹងដំណើរការនៅលើ URL: http://127.0.0.1:8000 🎉
+ឥឡូវនេះ កម្មវិធីនឹងដំណើរការនៅលើ URL: http://127.0.0.1:8000 
 
 ---
 
@@ -137,10 +137,6 @@ php artisan serve
 
 ---
 
-
-git add README.md
-git commit -m "docs: Update README.md with professional design and screenshots"
-git push origin main
 
 
 
