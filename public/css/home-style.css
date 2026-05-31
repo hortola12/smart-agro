@@ -1,0 +1,243 @@
+body {
+    background: #f5fdf7;
+}
+/* 🟢 កំណត់ Font រួមសម្រាប់វេបសាយទាំងមូល (លក្ខណៈ Minimalist Tech) */
+body, p, span, table, th, td, input, button, label, .form-control {
+    font-family: 'Nokora', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    line-height: 1.8 !important; /* បង្កើនគម្លាតជួរអក្សរបន្តិច ជួយឱ្យអក្សរខ្មែរមើលទៅស្អាត មិនជាន់ជើងគ្នា */
+    letter-spacing: 0.2px;
+}
+/* 🟢 កំណត់ Font ពិសេសសម្រាប់តែ ចំណងជើងធំៗ ឱ្យមើលទៅលេចធ្លោ និង Premium */
+h1, h2, h3, h4, h5, h6, .card-title {
+    font-family: 'Preahvihear', 'Nokora', sans-serif !important;
+    font-weight: 700 !important;
+    line-height: 1.6 !important;
+}
+
+/* HERO */
+.hero-box {
+    background: linear-gradient(135deg,#ffffff,#f3fff6);
+    border-radius: 24px;
+    transition: 0.3s;
+}
+
+.hero-box:hover {
+    transform: translateY(-2px);
+}
+
+/* SEARCH */
+.search-wrapper {
+    transition: 0.3s;
+}
+
+.search-wrapper:focus-within {
+    box-shadow: 0 0 0 4px rgba(25,135,84,0.15);
+    transform: translateY(-2px);
+}
+
+.search-input {
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 14px;
+}
+
+.search-btn {
+    transition: 0.3s;
+}
+
+.search-btn:hover {
+    transform: scale(1.03);
+}
+
+/* FEATURE CARDS */
+.feature-card {
+    background: #fff;
+    border-radius: 20px;
+    transition: 0.35s;
+    border: 1px solid #edf2ee;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(25,135,84,0.1);
+    color: #198754;
+    flex-shrink: 0;
+}
+
+/* HOW IT WORKS */
+.step-box {
+    transition: 0.3s;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.step-box:hover {
+    background: #f8fff9;
+    transform: translateY(-5px);
+}
+
+.step-circle {
+    width: 70px;
+    height: 70px;
+    background: white;
+    border: 3px solid #19875420;
+    transition: 0.3s;
+}
+
+.step-box:hover .step-circle {
+    background: #198754;
+    color: white !important;
+}
+
+/* PRODUCT CARD */
+.seed-card {
+    border-radius: 22px;
+    overflow: hidden;
+    transition: 0.35s;
+    background: white;
+}
+
+.seed-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.10);
+}
+
+.seed-image {
+    height: 220px;
+    object-fit: cover;
+    transition: 0.4s;
+}
+
+.seed-card:hover .seed-image {
+    transform: scale(1.05);
+}
+
+.category-badge {
+    border-radius: 50px;
+    padding: 7px 14px;
+    font-size: 12px;
+    background: rgba(25,135,84,0.1);
+    color: #198754;
+    font-weight: 600;
+}
+
+.price-tag {
+    font-size: 20px;
+    font-weight: bold;
+    color: #dc3545;
+}
+
+.progress {
+    border-radius: 50px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: 50px;
+}
+
+.seed-btn {
+    transition: 0.3s;
+    border-radius: 50px;
+}
+
+.seed-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(25,135,84,0.25);
+}
+
+/* SECTION TITLE */
+.section-title {
+    position: relative;
+}
+
+.section-title::after {
+    content:'';
+    width: 80px;
+    height: 4px;
+    background: #198754;
+    position: absolute;
+    left: 0;
+    bottom: -14px;
+    border-radius: 50px;
+}
+
+
+
+/* 🛒 CART PAGE STYLES */
+.cart-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #edf2ee;
+}
+
+.cart-table th {
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #edf2ee !important;
+    padding-bottom: 15px;
+}
+
+.cart-table td {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f1f5f2;
+}
+
+.qty-input-group {
+    max-width: 120px;
+    border-radius: 50px;
+    overflow: hidden;
+    border: 1px solid #ced4da;
+}
+
+.qty-input-group .form-control {
+    text-align: center;
+    border: none !important;
+    font-weight: bold;
+    color: #212529;
+}
+
+.summary-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #edf2ee;
+    position: sticky;
+    top: 90px; /* រក្សាកាតឱ្យនៅថេរពេល Scroll ចុះក្រោម */
+}
+
+.form-floating > .form-control:focus,
+.form-floating > .form-control:not(:placeholder-shown) {
+    padding-top: 1.625rem;
+    padding-bottom: .625rem;
+}
+
+.empty-cart-card {
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid #edf2ee;
+}
+
+
+/* ✨ HOVER EFFECT FOR NAVBAR BUTTONS */
+.nav-item .btn {
+    transition: all 0.25s ease-in-out;
+}
+
+.nav-item .btn:hover {
+    transform: translateY(-1.5px); /* ឱ្យប៊ូតុងអណ្តែតឡើងលើបន្តិច */
+    box-shadow: 0 6px 12px rgba(25, 135, 84, 0.15) !important;
+}

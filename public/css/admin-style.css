@@ -1,0 +1,238 @@
+/* ==========================================================================
+   📊 PREMIUM ADMIN DASHBOARD - GROW2GROW SYSTEM
+   ========================================================================== */
+
+/* OVERVIEW CARDS */
+.admin-stat-card {
+    border: 1px solid #edf2ee !important;
+    border-radius: 16px !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.admin-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.admin-icon-container {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* RECENT ORDERS TABLE CARD */
+.admin-main-card {
+    border: 1px solid #edf2ee !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+.admin-dashboard-table thead th {
+    font-weight: 700;
+    color: #495057;
+    font-size: 13px;
+    background-color: #f8fafc !important;
+    border-bottom: 2px solid #eef2f6 !important;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.admin-dashboard-table tbody td {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* SOFT OPACITY BADGES */
+.soft-badge {
+    font-weight: 600;
+    font-size: 12px;
+    padding: 5px 12px !important;
+    border-radius: 50px !important;
+    display: inline-flex;
+    align-items: center;
+}
+
+.soft-badge-warning {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+    color: #a07200 !important;
+    border: 1px solid rgba(255, 193, 7, 0.25);
+}
+
+.soft-badge-success {
+    background-color: rgba(25, 135, 84, 0.12) !important;
+    color: #198754 !important;
+    border: 1px solid rgba(25, 135, 84, 0.2);
+}
+
+
+/* 🌱 SEED MANAGEMENT STYLES */
+.admin-action-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
+    transition: all 0.2s ease;
+    border: 1px solid #eef2f6 !important;
+    background-color: #ffffff;
+}
+
+.admin-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.admin-action-btn-trace:hover {
+    color: #ffffff !important;
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+}
+
+.admin-action-btn-edit:hover {
+    color: #ffffff !important;
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+.admin-action-btn-delete {
+    color: #dc3545;
+}
+
+.admin-action-btn-delete:hover {
+    color: #ffffff !important;
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.seed-img-thumbnail {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+
+/* 📍 TRACEABILITY MANAGEMENT STYLES */
+.admin-modal-custom .modal-content {
+    border-radius: 20px !important;
+    overflow: hidden;
+}
+
+.admin-modal-custom .modal-header {
+    background-color: #198754 !important; /* ប្តូរទៅពណ៌បៃតងឱ្យស៊ីនឹង Brand Grow2Growth */
+    border-bottom: none;
+}
+
+.admin-modal-custom .form-control {
+    border-radius: 12px;
+    border: 1px solid #dfe6e2;
+    padding: 10px 14px;
+}
+
+.admin-modal-custom .form-control:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.1);
+}
+
+.admin-modal-custom .modal-footer {
+    border-top: none;
+}
+
+
+/* 🧾 ORDER MANAGEMENT STYLES */
+.order-item-list {
+    background-color: #f8fafc;
+    border-radius: 10px;
+    padding: 8px 12px;
+    border: 1px solid #eef2f6;
+}
+
+.order-item-list li:not(:last-child) {
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
+
+.admin-btn-ship {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 50px !important;
+    transition: all 0.2s ease;
+}
+
+.admin-btn-ship:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2);
+}
+
+
+/* 🧾 COMPACT ORDER ITEMS STYLES */
+.order-item-compact-box {
+    background-color: #fdfdfd;
+    border: 1px solid #eef2f6;
+    border-radius: 12px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.order-item-img-mini {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #edf2ee;
+}
+
+.order-item-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* បង្កើតគម្លាតចន្លោះមុខទំនិញនីមួយៗ */
+    max-width: 320px; /* កំណត់ទំហំទទឹងឱ្យសមសួនក្នុងតារាង */
+}
+
+
+/* 📝 ADMIN FORM STYLES */
+.admin-form-card {
+    border: 1px solid #edf2ee !important;
+    border-radius: 16px !important;
+}
+
+.admin-form-group label {
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 6px;
+}
+
+.admin-form-group .form-control {
+    border-radius: 10px;
+    border: 1px solid #dfe6e2;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.admin-form-group .form-control:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.1);
+    background-color: #fff;
+}
+
+.admin-img-preview-box {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border: 2px solid #fff;
+}
