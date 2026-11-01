@@ -130,8 +130,6 @@ php artisan serve
 
 ```
 
----
-
 
 
 
