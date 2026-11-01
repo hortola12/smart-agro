@@ -345,22 +345,49 @@
                         </ul>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-custom" href="{{ url('/#farming-guides-section') }}">
-                            <i class="fa-solid fa-book-open-reader me-1"></i> បច្ចេកទេសដាំដុះ
+                    <!-- 3. Farmer Guides & Tools Sub-Menu Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="farmerToolsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-book-open me-1"></i> មគ្គុទ្ទេសក៍កសិករ
                         </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-custom" href="{{ url('/#seed-calculator-section') }}">
-                            <i class="fa-solid fa-calculator me-1"></i> គណនាគ្រាប់ពូជ
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-custom" href="{{ url('/#about-farm-section') }}">
-                            <i class="fa-solid fa-tractor me-1"></i> អំពីកសិដ្ឋាន
-                        </a>
+                        <ul class="dropdown-menu dropdown-menu-agro border-0 shadow-lg rounded-4 p-2 mt-2" aria-labelledby="farmerToolsDropdown" style="min-width: 275px; font-size: 13.5px;">
+                            <li class="px-3 py-1.5 text-muted small fw-bold text-uppercase border-bottom mb-1" style="font-size: 11px; letter-spacing: 0.5px;">
+                                ជំនួយ & ឧបករណ៍កសិកម្មឆ្លាតវៃ
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-3 py-2 text-dark d-flex align-items-center" href="{{ url('/#seed-calculator-section') }}">
+                                    <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center me-2.5" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-calculator fs-6"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold d-block">ម៉ាស៊ីនគណនាគ្រាប់ពូជ</span>
+                                        <small class="text-muted" style="font-size: 11px;">គណនាបរិមាណតាមទំហំដី</small>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-3 py-2 text-dark d-flex align-items-center" href="{{ url('/#farming-guides-section') }}">
+                                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2.5" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-book-open-reader fs-6"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold d-block">បច្ចេកទេសដាំដុះវិទ្យាសាស្ត្រ</span>
+                                        <small class="text-muted" style="font-size: 11px;">វិធីបណ្តុះ របបទឹក និង pH</small>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-3 py-2 text-dark d-flex align-items-center" href="{{ url('/#about-farm-section') }}">
+                                    <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center me-2.5" style="width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-tractor fs-6"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold d-block">អំពីកសិដ្ឋានតាក្រាម</span>
+                                        <small class="text-muted" style="font-size: 11px;">សហគមន៍កសិកម្មបាត់ដំបង</small>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
 
@@ -622,6 +649,18 @@
         <a href="{{ url('/traceability') }}" class="dock-item {{ Request::is('traceability*') || Request::is('trace*') ? 'dock-active' : '' }}">
             <i class="fa-solid fa-qrcode"></i>
             <span class="dock-tooltip">🔍 តាមដានលេខបាច់ (Trace Batch)</span>
+        </a>
+
+        <!-- 5. Land & Seed Calculator -->
+        <a href="{{ url('/#seed-calculator-section') }}" class="dock-item text-success">
+            <i class="fa-solid fa-calculator"></i>
+            <span class="dock-tooltip">🧮 ម៉ាស៊ីនគណនាគ្រាប់ពូជ</span>
+        </a>
+
+        <!-- 6. Cultivation Guides -->
+        <a href="{{ url('/#farming-guides-section') }}" class="dock-item text-primary">
+            <i class="fa-solid fa-book-open-reader"></i>
+            <span class="dock-tooltip">📖 បច្ចេកទេសដាំដុះ</span>
         </a>
 
         <div class="dock-divider"></div>
