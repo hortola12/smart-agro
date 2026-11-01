@@ -14,7 +14,7 @@ class SeedTraceability extends Model
         'seed_id', // Foreign Key ភ្ជាប់ទៅតារាង seeds
         'batch_number',
         'origin_kh',
-        'origin_en', // 🔒 បើកសិទ្ធិឱ្យជួរឈរនេះ ដើម្បីការពារកំហុស Mass Assignment
+        'origin_en', //  បើកសិទ្ធិឱ្យជួរឈរនេះ ដើម្បីការពារកំហុស Mass Assignment
         'germination_rate',
         'harvest_date',
         'expiry_date',
