@@ -8,4 +8,12 @@ class Category extends Model
 {
     // កំណត់ជួរឈរដែលអនុញ្ញាតឱ្យបញ្ចូលទិន្នន័យបាន
     protected $fillable = ['name_kh', 'name_en', 'description'];
+
+    /**
+     * 🔗 ទំនាក់ទំនងទៅកាន់គ្រាប់ពូជដែលជាកូន (One-to-Many)
+     */
+    public function seeds()
+    {
+        return $this->hasMany(Seed::class);
+    }
 }

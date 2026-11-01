@@ -13,8 +13,16 @@ class Order extends Model
         'status',
         'customer_name',
         'customer_phone',
-        'delivery_address'
+        'delivery_address',
     ];
+
+    /**
+     * 👤 អតិថិជនដែលបានធ្វើការកម្ម៉ង់ទិញ (BelongsTo)
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * 📦 ការកម្មង់ទិញមួយ អាចមានមុខទំនិញលម្អិតច្រើន (One-to-Many)

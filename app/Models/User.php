@@ -36,4 +36,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * 🛒 ទំនាក់ទំនងទៅកាន់ការកម្ម៉ង់ទិញរបស់អតិថិជន (One-to-Many)
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

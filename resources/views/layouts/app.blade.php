@@ -48,20 +48,53 @@
                         </a>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/') }}#featured-seeds-section">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {{ __('menu_seeds') ?? 'គ្រាប់ពូជបន្លែ' }}
+                        </a>
+                        <ul class="dropdown-menu border-0 shadow-lg rounded-3 py-2" aria-labelledby="categoryDropdown" style="font-size: 13.5px;">
+                            <li>
+                                <a class="dropdown-item py-1.5 fw-bold text-success" href="{{ url('/#featured-seeds-section') }}">
+                                    <i class="fa-solid fa-border-all me-2"></i>គ្រាប់ពូជទាំងអស់ (All Seeds)
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            @if(isset($navCategories))
+                                @foreach($navCategories as $cat)
+                                    <li>
+                                        <a class="dropdown-item py-1.5 text-secondary" href="{{ url('/#featured-seeds-section') }}" onclick="setTimeout(() => { const btn = document.querySelector(`.filter-btn[data-category='{{ $cat->id }}']`); if(btn) btn.click(); }, 150);">
+                                            <i class="fa-solid fa-chevron-right text-success me-2" style="font-size: 10px;"></i>{{ App::isLocale('en') ? $cat->name_en : $cat->name_kh }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @endif
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ Request::is('traceability*') || Request::is('trace*') ? 'active text-warning fw-bold' : '' }}" href="{{ url('/traceability') }}">
+                            {{ __('menu_traceability') ?? 'តាមដានប្រភពដើម' }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link {{ Request::is('traceability') ? 'active text-warning fw-bold' : '' }}" href="{{ url('/traceability') }}">
-                            {{ __('menu_traceability') ?? 'តាមដានប្រភពដើម' }}
+                        <a class="nav-link" href="{{ url('/#farming-guides-section') }}">
+                            បច្ចេកទេសដាំដុះ
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url('/#about-farm-section') }}">
+                            អំពីកសិដ្ឋាន
                         </a>
                     </li>
                 </ul>
 
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2">
+                    <a href="https://t.me/" target="_blank" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-bold d-none d-xl-inline-flex align-items-center text-decoration-none me-1" style="font-size: 12px; height: 36px; border-color: rgba(255,255,255,0.4);">
+                        <i class="fa-brands fa-telegram text-warning me-1.5 fs-6"></i>
+                        <span>ជំនួយកសិករ</span>
+                    </a>
                     <form action="{{ url('/search') }}" method="GET" class="d-flex align-items-center m-0 me-lg-2">
                         <div class="input-group rounded-pill overflow-hidden border border-light border-opacity-25 bg-white px-2 shadow-sm" style="height: 36px; max-width: 240px;">
                             <input type="text"
@@ -157,14 +190,105 @@
         </div>
     </main>
 
-    <footer class="text-white py-4" style="background-color: #1a3327; border-top: 3px solid #198754;">
+    <footer class="text-white pt-5 pb-4" style="background: linear-gradient(180deg, #163626 0%, #0d2318 100%); border-top: 4px solid #198754;">
         <div class="container">
-            <div class="row align-items-center opacity-75">
+            <div class="row g-4 mb-4">
+                <!-- Col 1: Brand Info -->
+                <div class="col-lg-4 col-md-6">
+                    <a class="navbar-brand fw-bold d-flex align-items-center text-white mb-3 text-decoration-none" href="{{ url('/') }}" style="font-size: 20px;">
+                        <i class="fa-solid fa-seedling me-2 text-warning fs-3"></i>
+                        <span>Grow2Growth</span>
+                    </a>
+                    <p class="text-white-50 small mb-3" style="line-height: 1.7;">
+                        វេទិកាទីផ្សារគ្រាប់ពូជកសិកម្មវៃឆ្លាត និងតាមដានប្រភពដើម (Traceability) ដំបូងគេនៅកម្ពុជា សហការជាមួយសហគមន៍កសិកម្មខេត្តបាត់ដំបង ធានាគ្រាប់ពូជសុទ្ធ អត្រាដំណុះ ៩៥%+។
+                    </p>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1.5 fw-bold" style="font-size: 11px;">
+                            <i class="fa-solid fa-certificate me-1"></i> សហគមន៍កសិកម្មបាត់ដំបង
+                        </span>
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-1.5 fw-bold" style="font-size: 11px;">
+                            <i class="fa-solid fa-qrcode me-1"></i> QR Traceable
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Col 2: Quick Links -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="fw-bold text-warning mb-3" style="font-family: 'Kantumruy Pro', sans-serif;">តំណភ្ជាប់រហ័ស</h6>
+                    <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
+                        <li><a href="{{ url('/') }}" class="text-white-50 text-decoration-none hover-white">ទំព័រដើម</a></li>
+                        <li><a href="{{ url('/#featured-seeds-section') }}" class="text-white-50 text-decoration-none hover-white">គ្រាប់ពូជទាំងអស់</a></li>
+                        <li><a href="{{ url('/traceability') }}" class="text-white-50 text-decoration-none hover-white">តាមដានលេខបាច់ QR</a></li>
+                        <li><a href="{{ url('/#farming-guides-section') }}" class="text-white-50 text-decoration-none hover-white">បច្ចេកទេសដាំដុះ</a></li>
+                        <li><a href="{{ url('/#about-farm-section') }}" class="text-white-50 text-decoration-none hover-white">អំពីកសិដ្ឋានដៃគូ</a></li>
+                        <li><a href="{{ url('/cart') }}" class="text-white-50 text-decoration-none hover-white">កន្ត្រកទំនិញ</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Categories -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <h6 class="fw-bold text-warning mb-3" style="font-family: 'Kantumruy Pro', sans-serif;">ប្រភេទគ្រាប់ពូជ</h6>
+                    <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
+                        @if(isset($navCategories))
+                            @foreach($navCategories as $cat)
+                                <li>
+                                    <a href="{{ url('/#featured-seeds-section') }}"
+                                       onclick="setTimeout(() => { const btn = document.querySelector(`.filter-btn[data-category='{{ $cat->id }}']`); if(btn) btn.click(); }, 150);"
+                                       class="text-white-50 text-decoration-none hover-white">
+                                        <i class="fa-solid fa-leaf text-success me-1.5" style="font-size: 10px;"></i>
+                                        {{ App::isLocale('en') ? $cat->name_en : $cat->name_kh }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        @else
+                            <li><span class="text-white-50">បន្លែយកស្លឹក (Leafy)</span></li>
+                            <li><span class="text-white-50">បន្លែយកផ្លែ (Fruit)</span></li>
+                            <li><span class="text-white-50">ពពួកមើម (Root)</span></li>
+                        @endif
+                    </ul>
+                </div>
+
+                <!-- Col 4: Contact & Support -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold text-warning mb-3" style="font-family: 'Kantumruy Pro', sans-serif;">ទំនាក់ទំនង & ជំនួយ</h6>
+                    <ul class="list-unstyled small text-white-50 mb-3 d-flex flex-column gap-2">
+                        <li class="d-flex align-items-start">
+                            <i class="fa-solid fa-location-dot text-success me-2 mt-1"></i>
+                            <span>ឃុំតាក្រាម ស្រុកបាណន់ ខេត្តបាត់ដំបង</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <i class="fa-solid fa-phone text-success me-2"></i>
+                            <span>053 952 888 / 098 765 432</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <i class="fa-solid fa-envelope text-success me-2"></i>
+                            <span>support@grow2growth.kh</span>
+                        </li>
+                    </ul>
+
+                    <div class="d-flex gap-2">
+                        <a href="https://t.me/" target="_blank" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="Telegram Channel">
+                            <i class="fa-brands fa-telegram"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="Facebook">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="YouTube">
+                            <i class="fa-brands fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-secondary opacity-25 my-4">
+
+            <div class="row align-items-center opacity-75 small">
                 <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
-                    <p class="mb-0 small">© 2026 <strong>{{ __('footer_title') ?? 'Grow2Growth Agri-Tech' }}</strong>. រក្សាសិទ្ធិគ្រប់យ៉ាង</p>
+                    <p class="mb-0">© 2026 <strong>Grow2Growth Agri-Tech</strong>. រក្សាសិទ្ធិគ្រប់យ៉ាង</p>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
-                    <p class="mb-0 small">{{ __('footer_rights') ?? 'ប្រព័ន្ធតាមដានខ្សែសង្វាក់គ្រាប់ពូជកសិកម្មវៃឆ្លាត' }}</p>
+                    <span class="me-3"><i class="fa-solid fa-truck-fast text-success me-1"></i> ដឹកជញ្ជូន ២៥ ខេត្ត-ក្រុង</span>
+                    <span><i class="fa-solid fa-shield-halved text-warning me-1"></i> ធានាគុណភាព ១០០%</span>
                 </div>
             </div>
         </div>

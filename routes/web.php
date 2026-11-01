@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\SeedController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Models\Category;
 use App\Models\Seed;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,10 +16,11 @@ use Illuminate\Support\Facades\Route;
 
 // ១. ទំព័រដើមគេហទំព័រ Frontend (Homepage)
 Route::get('/', function () {
-    //  Eager Load 'traceability' ចូលទៅជាមួយ ដើម្បីឱ្យ Progress Bar ទំព័រដើមបង្ហាញអត្រាលូតលាស់ពិតប្រាកដចេញពី DB
+    // Eager Load 'traceability' និងរាប់ចំនួនគ្រាប់ពូជក្នុងប្រភេទនីមួយៗ (withCount)
+    $categories = Category::withCount('seeds')->get();
     $seeds = Seed::with(['category', 'traceability'])->get();
 
-    return view('home', compact('seeds'));
+    return view('home', compact('seeds', 'categories'));
 });
 
 // ២. ទំព័រព័ត៌មានលម្អិតគ្រាប់ពូជ
@@ -150,4 +152,13 @@ Route::middleware([AdminMiddleware::class])->group(function () {
     Route::get('/admin/orders', [SeedController::class, 'adminOrders']);
     Route::post('/admin/orders/status/{id}', [SeedController::class, 'updateOrderStatus']);
     Route::delete('/admin/orders/delete/{id}', [SeedController::class, 'destroyOrder']);
+
+    // ៥. គ្រប់គ្រងប្រភេទបន្លែ (Admin Categories Management)
+    Route::get('/admin/categories', [SeedController::class, 'adminCategories']);
+    Route::post('/admin/categories/store', [SeedController::class, 'storeCategory']);
+    Route::put('/admin/categories/update/{id}', [SeedController::class, 'updateCategory']);
+    Route::delete('/admin/categories/delete/{id}', [SeedController::class, 'destroyCategory']);
+
+    // ៦. គ្រប់គ្រងបញ្ជីអតិថិជន (Admin Customers Management)
+    Route::get('/admin/customers', [SeedController::class, 'adminCustomers']);
 });

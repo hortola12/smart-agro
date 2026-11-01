@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Seed;
 use App\Models\SeedTraceability;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -92,11 +93,27 @@ class SeedController extends Controller
     /**
      * ៣. មុខងារសម្រាប់ទាញទិន្នន័យគ្រាប់ពូជទាំងអស់មកបង្ហាញក្នុងតារាង Admin
      */
-    public function index()
+    public function index(Request $request)
     {
-        $seeds = Seed::with('category')->orderBy('created_at', 'desc')->paginate(10);
+        $query = Seed::with('category')->orderBy('created_at', 'desc');
 
-        return view('admin.seeds', compact('seeds'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name_kh', 'LIKE', "%{$search}%")
+                    ->orWhere('name_en', 'LIKE', "%{$search}%")
+                    ->orWhere('batch_number', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('category_id') && $request->category_id !== 'all') {
+            $query->where('category_id', $request->category_id);
+        }
+
+        $seeds = $query->paginate(10)->withQueryString();
+        $categories = Category::all();
+
+        return view('admin.seeds', compact('seeds', 'categories'));
     }
 
     /**
@@ -339,23 +356,18 @@ class SeedController extends Controller
                 'quantity' => 1,
                 'price' => $seed->price,
                 'image' => $seed->image,
-                'stock' => $seed->stock - 1, // ស្តុកដែលសល់បង្ហាញក្នុងកន្ត្រក
+                'stock' => $seed->stock,
             ];
-            // កាត់ស្តុកពិតប្រាកដនៅក្នុង Database ថយចុះ ១ កញ្ចប់ភ្លាមៗ
-            $seed->decrement('stock', 1);
         } else {
-            if ($seed->stock > 0) {
+            if ($cart[$id]['quantity'] < $seed->stock) {
                 $cart[$id]['quantity']++;
-
-                // កាត់ស្តុកពិតប្រាកដនៅក្នុង Database ថយចុះ ១ កញ្ចប់បន្ថែម
-                $seed->decrement('stock', 1);
             } else {
                 return redirect()->back()->with('error', 'មិនអាចបន្ថែមបានទេ ព្រោះលើសចំនួនស្តុកដែលមាន!');
             }
         }
         session()->put('cart', $cart);
 
-        return redirect()->back()->with('success', 'គ្រាប់ពូជត្រូវបានដាក់ចូលកន្ត្រក និងកាត់ស្តុកដោយជោគជ័យ! 🛒');
+        return redirect()->back()->with('success', 'គ្រាប់ពូជត្រូវបានដាក់ចូលកន្ត្រកដោយជោគជ័យ! 🛒');
     }
 
     /**
@@ -389,7 +401,16 @@ class SeedController extends Controller
 
         try {
             DB::transaction(function () use ($request, $cart, $totalPrice) {
-                // រក្សាទុកទៅក្នុងតារាង orders
+                // ១. ចាក់សោរ និងកាត់ស្តុកពិតប្រាកដក្នុង Database
+                foreach ($cart as $id => $details) {
+                    $seed = Seed::where('id', $id)->lockForUpdate()->first();
+                    if (! $seed || $seed->stock < $details['quantity']) {
+                        throw new \Exception('សុំទោស! គ្រាប់ពូជ '.($seed->name_kh ?? '').' មិនមានចំនួនគ្រប់គ្រាន់ក្នុងស្តុកឡើយ។');
+                    }
+                    $seed->decrement('stock', $details['quantity']);
+                }
+
+                // ២. រក្សាទុកទៅក្នុងតារាង orders
                 $order = Order::create([
                     'user_id' => Auth::id(),
                     'customer_name' => $request->customer_name,
@@ -399,7 +420,7 @@ class SeedController extends Controller
                     'status' => 'pending',
                 ]);
 
-                // រក្សាទុកទំនិញនិមួយៗទៅក្នុងតារាង order_items
+                // ៣. រក្សាទុកទំនិញនិមួយៗទៅក្នុងតារាង order_items
                 foreach ($cart as $id => $details) {
                     OrderItem::create([
                         'order_id' => $order->id,
@@ -415,7 +436,7 @@ class SeedController extends Controller
 
             return redirect('/')->with('success', 'ការកម្ម៉ង់ទិញរបស់អ្នកទទួលបានជោគជ័យ! យើងនឹងទាក់ទងទៅអ្នកក្នុងពេលឆាប់ៗ។');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', 'មានបញ្ហាបច្ចេកទេសក្នុងការរក្សាទុកការបញ្ជាទិញ សូមព្យាយាមម្តងទៀត!');
+            return redirect()->back()->with('error', $e->getMessage() ?: 'មានបញ្ហាបច្ចេកទេសក្នុងការរក្សាទុកការបញ្ជាទិញ សូមព្យាយាមម្តងទៀត!');
         }
     }
 
@@ -438,34 +459,22 @@ class SeedController extends Controller
     {
         if ($request->id && isset($request->quantity)) {
             $seed = Seed::find($request->id);
-            $cart = session()->get('cart');
-
-            $oldQty = $cart[$request->id]['quantity'];
+            $cart = session()->get('cart', []);
             $newQty = intval($request->quantity);
 
-            // គណនារកចំនួនខុសគ្នា រវាងចំនួនចាស់ និងចំនួនថ្មី
-            if ($newQty > $oldQty) {
-                $difference = $newQty - $oldQty;
-
-                // បើកសិទ្ធិឆែកមើលស្តុកក្នុង DB មុន
-                if ($seed->stock < $difference) {
-                    return response()->json(['error' => 'សុំទោស! ចំនួនក្នុងស្តុកមិនគ្រប់គ្រាន់ឡើយ សល់ត្រឹមតែ '.$seed->stock.' កញ្ចប់ប៉ុណ្ណោះ។'], 400);
-                }
-
-                //  កែសម្រួល៖ បើថែមចំនួនក្នុងកន្ត្រក ត្រូវកាត់ស្តុកក្នុង Database ថយចុះថែម
-                $seed->decrement('stock', $difference);
-            } elseif ($newQty < $oldQty) {
-                $difference = $oldQty - $newQty;
-
-                //  កែសម្រួល៖ បើដកចំនួនក្នុងកន្ត្រក ត្រូវបូកស្តុកចូល Database ត្រឡប់មកវិញ
-                $seed->increment('stock', $difference);
+            if ($seed && $newQty > $seed->stock) {
+                return response()->json(['error' => 'សុំទោស! ចំនួនក្នុងស្តុកមិនគ្រប់គ្រាន់ឡើយ សល់ត្រឹមតែ '.$seed->stock.' កញ្ចប់ប៉ុណ្ណោះ។'], 400);
             }
 
-            $cart[$request->id]['quantity'] = $newQty;
-            session()->put('cart', $cart);
+            if (isset($cart[$request->id])) {
+                $cart[$request->id]['quantity'] = max(1, $newQty);
+                session()->put('cart', $cart);
 
-            return response()->json(['success' => 'បានធ្វើបច្ចុប្បន្នភាពកន្ត្រក និងស្តុកជោគជ័យ!']);
+                return response()->json(['success' => 'បានធ្វើបច្ចុប្បន្នភាពកន្ត្រកជោគជ័យ!']);
+            }
         }
+
+        return response()->json(['error' => 'ទិន្នន័យមិនត្រឹមត្រូវ'], 400);
     }
 
     /**
@@ -474,17 +483,9 @@ class SeedController extends Controller
     public function removeFromCart(Request $request)
     {
         if ($request->id) {
-            $cart = session()->get('cart');
+            $cart = session()->get('cart', []);
 
             if (isset($cart[$request->id])) {
-                $qtyToReturn = $cart[$request->id]['quantity'];
-
-                //  កែសម្រួល៖ ទាញយកគ្រាប់ពូជនោះ រួចបូកចំនួនដែលធ្លាប់ទិញចូលស្តុក DB វិញទាំងអស់ការពារបាត់ទិន្នន័យ
-                $seed = Seed::find($request->id);
-                if ($seed) {
-                    $seed->increment('stock', $qtyToReturn);
-                }
-
                 unset($cart[$request->id]);
                 session()->put('cart', $cart);
             }
@@ -498,9 +499,24 @@ class SeedController extends Controller
     /**
      * ២០. មុខងារសម្រាប់បង្ហាញបញ្ជីការកម្ម៉ង់ទិញទាំងអស់ទៅកាន់ Admin (Order List)
      */
-    public function adminOrders()
+    public function adminOrders(Request $request)
     {
-        $orders = Order::with('items.seed')->orderBy('created_at', 'desc')->paginate(10);
+        $query = Order::with('items.seed')->orderBy('created_at', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('customer_name', 'LIKE', "%{$search}%")
+                    ->orWhere('customer_phone', 'LIKE', "%{$search}%")
+                    ->orWhere('id', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $orders = $query->paginate(10)->withQueryString();
 
         return view('admin.orders', compact('orders'));
     }
@@ -508,10 +524,37 @@ class SeedController extends Controller
     /**
      * ២១. មុខងារសម្រាប់ Admin ចុចប្ដូរស្ថានភាពការកម្ម៉ង់ (Update Status)
      */
-    public function updateOrderStatus($id)
+    public function updateOrderStatus(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
-        $order->update(['status' => 'completed']);
+        $newStatus = $request->input('status', 'completed');
+        $validStatuses = ['pending', 'processing', 'shipping', 'completed', 'cancelled'];
+
+        if (! in_array($newStatus, $validStatuses)) {
+            $newStatus = 'completed';
+        }
+
+        $order = Order::with('items.seed')->findOrFail($id);
+        $oldStatus = $order->status;
+
+        DB::transaction(function () use ($order, $oldStatus, $newStatus) {
+            // ប្រសិនបើបោះបង់ការកម្ម៉ង់ ត្រូវបូកស្តុកចូល Database វិញ
+            if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+                foreach ($order->items as $item) {
+                    if ($item->seed) {
+                        $item->seed->increment('stock', $item->quantity);
+                    }
+                }
+            } elseif ($oldStatus === 'cancelled' && $newStatus !== 'cancelled') {
+                // ប្រសិនបើដំណើរការឡើងវិញ ត្រូវកាត់ស្តុកចេញវិញ
+                foreach ($order->items as $item) {
+                    if ($item->seed) {
+                        $item->seed->decrement('stock', $item->quantity);
+                    }
+                }
+            }
+
+            $order->update(['status' => $newStatus]);
+        });
 
         return redirect()->back()->with('success', 'បានធ្វើបច្ចុប្បន្នភាពស្ថានភាពការកម្ម៉ង់រួចរាល់!');
     }
@@ -521,11 +564,22 @@ class SeedController extends Controller
      */
     public function destroyOrder($id)
     {
-        $order = Order::findOrFail($id);
-        $order->items()->delete();
-        $order->delete();
+        $order = Order::with('items.seed')->findOrFail($id);
 
-        return redirect()->back()->with('success', 'ការកម្ម៉ង់ទិញ ត្រូវបានលុបចេញពីប្រព័ន្ធហើយ!');
+        DB::transaction(function () use ($order) {
+            // បូកស្តុកត្រឡប់ចូលវិញប្រសិនបើការកម្ម៉ង់មិនទាន់បានបោះបង់ពីមុន
+            if ($order->status !== 'cancelled') {
+                foreach ($order->items as $item) {
+                    if ($item->seed) {
+                        $item->seed->increment('stock', $item->quantity);
+                    }
+                }
+            }
+            $order->items()->delete();
+            $order->delete();
+        });
+
+        return redirect()->back()->with('success', 'ការកម្ម៉ង់ទិញ ត្រូវបានលុបចេញពីប្រព័ន្ធ និងបូកស្តុកត្រឡប់មកវិញជោគជ័យ!');
     }
 
     /**
@@ -620,5 +674,105 @@ class SeedController extends Controller
 
         // បោះទៅកាន់ទំព័រ my_orders.blade.php របស់អតិថិជន
         return view('my_orders', compact('orders'));
+    }
+
+    /**
+     * ២៧. មុខងារបង្ហាញបញ្ជីប្រភេទបន្លែទាំងអស់ (Admin Categories)
+     */
+    public function adminCategories(Request $request)
+    {
+        $query = Category::withCount('seeds')->orderBy('id', 'asc');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name_kh', 'LIKE', "%{$search}%")
+                    ->orWhere('name_en', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $categories = $query->paginate(10)->withQueryString();
+
+        return view('admin.categories', compact('categories'));
+    }
+
+    /**
+     * ២៨. មុខងាររក្សាទុកប្រភេទបន្លែថ្មី (Store Category)
+     */
+    public function storeCategory(Request $request)
+    {
+        $validated = $request->validate([
+            'name_kh' => ['required', 'string', 'max:255'],
+            'name_en' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        Category::create($validated);
+
+        return redirect()->back()->with('success', 'បានបង្កើតប្រភេទបន្លែថ្មីដោយជោគជ័យ!');
+    }
+
+    /**
+     * ២៩. មុខងារកែប្រែព័ត៌មានប្រភេទបន្លែ (Update Category)
+     */
+    public function updateCategory(Request $request, $id)
+    {
+        $category = Category::findOrFail($id);
+
+        $validated = $request->validate([
+            'name_kh' => ['required', 'string', 'max:255'],
+            'name_en' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $category->update($validated);
+
+        return redirect()->back()->with('success', 'បានកែប្រែព័ត៌មានប្រភេទបន្លែដោយជោគជ័យ!');
+    }
+
+    /**
+     * ៣០. មុខងារលុបប្រភេទបន្លែ (Delete Category)
+     */
+    public function destroyCategory($id)
+    {
+        $category = Category::withCount('seeds')->findOrFail($id);
+
+        if ($category->seeds_count > 0) {
+            return redirect()->back()->with('error', "មិនអាចលុបប្រភេទបន្លែ '{$category->name_kh}' បានទេ ព្រោះមានគ្រាប់ពូជចំនួន {$category->seeds_count} កំពុងប្រើប្រាស់វា!");
+        }
+
+        $category->delete();
+
+        return redirect()->back()->with('success', 'បានលុបប្រភេទបន្លែដោយជោគជ័យ!');
+    }
+
+    /**
+     * ៣១. មុខងារបង្ហាញបញ្ជីអតិថិជនទាំងអស់ (Admin Customers)
+     */
+    public function adminCustomers(Request $request)
+    {
+        $query = User::withCount('orders')
+            ->withSum('orders', 'total_price')
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role') && $request->role !== 'all') {
+            $query->where('role', $request->role);
+        }
+
+        $customers = $query->paginate(10)->withQueryString();
+
+        $totalUsersCount = User::count();
+        $totalCustomersCount = User::where('role', 'customer')->count();
+        $totalOrdersCount = Order::count();
+
+        return view('admin.customers', compact('customers', 'totalUsersCount', 'totalCustomersCount', 'totalOrdersCount'));
     }
 }

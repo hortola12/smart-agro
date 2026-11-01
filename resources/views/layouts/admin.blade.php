@@ -102,6 +102,14 @@
                     <i class="fa-solid fa-receipt text-danger"></i> គ្រប់គ្រងការកម្ម៉ង់
                 </a>
 
+                <a href="{{ url('/admin/categories') }}" class="nav-link {{ request()->is('admin/categories*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-tags text-primary"></i> គ្រប់គ្រងប្រភេទបន្លែ
+                </a>
+
+                <a href="{{ url('/admin/customers') }}" class="nav-link {{ request()->is('admin/customers*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-users text-warning"></i> បញ្ជីអតិថិជន
+                </a>
+
                 <hr class="text-secondary mx-3 my-3 opacity-25">
 
                 <a href="{{ url('/') }}" class="nav-link text-white-50">

@@ -27,6 +27,39 @@
         </a>
     </div>
 
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+        <form action="{{ url('/admin/seeds') }}" method="GET" class="row g-2 align-items-center m-0">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="search" class="form-control bg-light border-start-0" placeholder="ស្វែងរកតាមឈ្មោះគ្រាប់ពូជ ឬលេខបាច់..." value="{{ request('search') }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="category_id" class="form-select bg-light">
+                    <option value="all">-- ប្រភេទទាំងអស់ (All Categories) --</option>
+                    @if(isset($categories))
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                {{ $cat->name_kh }} ({{ $cat->name_en }})
+                            </option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-success fw-bold rounded-pill px-3 w-100">
+                    <i class="fa-solid fa-filter me-1"></i> ស្វែងរក
+                </button>
+                @if(request('search') || (request('category_id') && request('category_id') !== 'all'))
+                    <a href="{{ url('/admin/seeds') }}" class="btn btn-light border fw-bold rounded-pill px-3" title="លុប Filter">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
     <div class="card admin-main-card border-0 shadow-sm mb-4">
         <div class="card-body p-0">
             <div class="table-responsive">

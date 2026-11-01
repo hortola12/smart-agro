@@ -196,7 +196,25 @@
                         </div>
                     </div>
 
-                    <div class="modal-footer bg-light border-0 py-2.5 px-4 rounded-bottom-4">
+                    <div class="modal-footer bg-light border-0 py-2.5 px-4 rounded-bottom-4 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-success fw-bold rounded-pill px-3 btn-sm"
+                                onclick="printCustomerReceipt({{ json_encode([
+                                    'id' => str_pad($order->id, 5, '0', STR_PAD_LEFT),
+                                    'date' => $order->created_at ? $order->created_at->format('d-M-Y H:i') : '',
+                                    'customer_name' => $order->customer_name,
+                                    'customer_phone' => $order->customer_phone,
+                                    'delivery_address' => $order->delivery_address,
+                                    'total_price' => number_format($order->total_price, 2),
+                                    'items' => $order->items->map(fn($it) => [
+                                        'name' => $it->seed?->name_kh ?? 'គ្រាប់ពូជ',
+                                        'batch' => $it->seed?->batch_number ?? '---',
+                                        'quantity' => $it->quantity,
+                                        'price' => number_format($it->price, 2),
+                                        'subtotal' => number_format($it->subtotal, 2),
+                                    ]),
+                                ]) }})">
+                            <i class="fa-solid fa-print me-1"></i> ព្រីនវិក្កយបត្រ (Print Receipt)
+                        </button>
                         <button type="button" class="btn btn-secondary fw-bold rounded-pill px-4 btn-sm" data-bs-dismiss="modal">
                             បិទផ្ទាំង
                         </button>
@@ -243,4 +261,100 @@
         color: #198754 !important;
     }
 </style>
+
+<script>
+    function printCustomerReceipt(order) {
+        const printWindow = window.open('', '_blank', 'width=750,height=850');
+        let itemsHtml = '';
+        order.items.forEach((item, index) => {
+            itemsHtml += `
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px dashed #e2e8f0; text-align: center;">${index + 1}</td>
+                    <td style="padding: 10px; border-bottom: 1px dashed #e2e8f0; font-weight: bold;">
+                        ${item.name}
+                        <br><small style="color: #64748b; font-family: monospace; font-size: 11px;">Batch: #${item.batch}</small>
+                    </td>
+                    <td style="padding: 10px; border-bottom: 1px dashed #e2e8f0; text-align: center; font-family: monospace;">$${item.price}</td>
+                    <td style="padding: 10px; border-bottom: 1px dashed #e2e8f0; text-align: center; font-family: monospace; font-weight: bold;">x${item.quantity}</td>
+                    <td style="padding: 10px; border-bottom: 1px dashed #e2e8f0; text-align: right; font-family: monospace; font-weight: bold; color: #198754;">$${item.subtotal}</td>
+                </tr>
+            `;
+        });
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Receipt - #ORD-${order.id}</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&display=swap');
+                    body { font-family: 'Kantumruy Pro', sans-serif; padding: 30px; color: #1e293b; background: #fff; line-height: 1.5; font-size: 13.5px; }
+                    .header { display: flex; justify-content: space-between; border-bottom: 3px solid #198754; padding-bottom: 15px; margin-bottom: 25px; }
+                    .brand { font-size: 22px; font-weight: bold; color: #198754; }
+                    .invoice-id { font-family: monospace; font-size: 18px; font-weight: bold; color: #0f172a; }
+                    .customer-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 25px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+                    th { background: #f1f5f9; padding: 10px; font-weight: bold; color: #475569; font-size: 13px; }
+                    .total-box { text-align: right; font-size: 16px; margin-bottom: 40px; }
+                    .total-amount { font-size: 22px; font-weight: bold; color: #dc2626; font-family: monospace; }
+                    .footer { text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 15px; color: #64748b; font-size: 12px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <div class="brand">🌱 Grow2Growth Agri-Tech</div>
+                        <small style="color: #64748b;">វិក្កយបត្រទិញគ្រាប់ពូជកសិកម្មផ្លូវការ (Customer Invoice)</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="invoice-id">#ORD-${order.id}</div>
+                        <small style="color: #64748b;">កាលបរិច្ឆេទ៖ ${order.date}</small>
+                    </div>
+                </div>
+
+                <div class="customer-box">
+                    <strong style="display: block; margin-bottom: 8px; color: #198754;">ព័ត៌មានអ្នកទទួលទំនិញ (Customer Delivery)៖</strong>
+                    <div><strong>ឈ្មោះ៖</strong> ${order.customer_name}</div>
+                    <div><strong>លេខទូរស័ព្ទ៖</strong> <span style="font-family: monospace;">${order.customer_phone}</span></div>
+                    <div><strong>អាសយដ្ឋានដឹកជញ្ជូន៖</strong> ${order.delivery_address}</div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="8%">ល.រ</th>
+                            <th>មុខទំនិញគ្រាប់ពូជ</th>
+                            <th width="15%" style="text-align: center;">តម្លៃរាយ</th>
+                            <th width="12%" style="text-align: center;">ចំនួន</th>
+                            <th width="18%" style="text-align: right;">សរុប</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+
+                <div class="total-box">
+                    <span>ទឹកប្រាក់សរុបរួម៖ </span>
+                    <span class="total-amount">$${order.total_price}</span>
+                </div>
+
+                <div class="footer">
+                    <p style="margin-bottom: 4px;">សូមអរគុណសម្រាប់ការគាំទ្រគ្រាប់ពូជកសិកម្មសុទ្ធពី Grow2Growth!</p>
+                    <p style="margin: 0; font-size: 11px;">លោកអ្នកអាចស្កេនលេខកូដ Batch លើកញ្ចប់ ដើម្បីមើលប្រភពកសិដ្ឋាន និងវិធីដាំដុះបានគ្រប់ពេលវេលា។</p>
+                </div>
+
+                <script>
+                    window.onload = function() {
+                        setTimeout(function() {
+                            window.print();
+                        }, 300);
+                    }
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+</script>
+
 @endsection

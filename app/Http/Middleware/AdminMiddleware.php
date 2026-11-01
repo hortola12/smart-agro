@@ -14,8 +14,8 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        //  check:  If we are not login or admin, 
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
+        //  check:  If we are not login or admin,
+        if (! Auth::check() || Auth::user()->role !== 'admin') {
 
             // Go back to Login and show warming message
             return redirect()->route('login')->withErrors([

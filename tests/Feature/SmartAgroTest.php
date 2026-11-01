@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\Seed;
 use App\Models\SeedTraceability;
 use App\Models\User;
@@ -179,5 +180,144 @@ class SmartAgroTest extends TestCase
         $seeds = $response->viewData('seeds');
         $this->assertEquals(10, $seeds->count()); // Only 10 on page 1
         $this->assertEquals(12, $seeds->total()); // 12 in total
+    }
+
+    public function test_stock_is_deducted_at_checkout_and_restored_on_cancellation(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin_stock@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $customer = User::create([
+            'name' => 'Customer',
+            'email' => 'customer_stock@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'customer',
+        ]);
+
+        $category = Category::create([
+            'name_kh' => 'បន្លែ',
+            'name_en' => 'Vegetables',
+        ]);
+
+        $seed = Seed::create([
+            'category_id' => $category->id,
+            'name_kh' => 'ពូជសាឡាត់ពិសេស',
+            'name_en' => 'Special Lettuce',
+            'price' => 2.00,
+            'stock' => 20,
+            'batch_number' => 'BATCH-STOCK-01',
+        ]);
+
+        // 1. Adding to cart should NOT reduce stock in database
+        $this->actingAs($customer)->post('/add-to-cart/'.$seed->id);
+        $this->assertEquals(20, $seed->fresh()->stock);
+
+        // 2. Checkout should deduct stock
+        $this->actingAs($customer)->post('/checkout', [
+            'customer_name' => 'Customer',
+            'customer_phone' => '098765432',
+            'delivery_address' => 'Phnom Penh',
+        ]);
+        $this->assertEquals(19, $seed->fresh()->stock);
+
+        $order = Order::latest()->first();
+
+        // 3. Admin cancelling order restores stock
+        $this->actingAs($admin)->post('/admin/orders/status/'.$order->id, [
+            'status' => 'cancelled',
+        ]);
+        $this->assertEquals(20, $seed->fresh()->stock);
+    }
+
+    public function test_admin_can_manage_categories(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin_cat@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        // 1. Visit category index
+        $response = $this->actingAs($admin)->get('/admin/categories');
+        $response->assertStatus(200);
+        $response->assertSee('គ្រប់គ្រងប្រភេទបន្លែ');
+
+        // 2. Store new category
+        $storeResponse = $this->actingAs($admin)->post('/admin/categories/store', [
+            'name_kh' => 'ពពួកមើម',
+            'name_en' => 'Root Vegetables',
+            'description' => 'បន្លែដែលប្រមូលផលក្រោមដី',
+        ]);
+        $storeResponse->assertRedirect();
+        $this->assertDatabaseHas('categories', ['name_en' => 'Root Vegetables']);
+
+        $category = Category::where('name_en', 'Root Vegetables')->first();
+
+        // 3. Update category
+        $updateResponse = $this->actingAs($admin)->put('/admin/categories/update/'.$category->id, [
+            'name_kh' => 'ពពួកមើមពិសេស',
+            'name_en' => 'Special Root Vegetables',
+            'description' => 'បន្លែប្រភេទមើមសរីរាង្គ',
+        ]);
+        $updateResponse->assertRedirect();
+        $this->assertDatabaseHas('categories', ['name_en' => 'Special Root Vegetables']);
+
+        // 4. If category has seeds, delete is prevented
+        $seed = Seed::create([
+            'category_id' => $category->id,
+            'name_kh' => 'ការ៉ុត',
+            'name_en' => 'Carrot',
+            'price' => 1.20,
+            'stock' => 15,
+            'batch_number' => 'BATCH-CARROT-01',
+        ]);
+
+        $deleteResponse1 = $this->actingAs($admin)->delete('/admin/categories/delete/'.$category->id);
+        $deleteResponse1->assertSessionHas('error');
+        $this->assertDatabaseHas('categories', ['id' => $category->id]);
+
+        // 5. If category has no seeds, delete succeeds
+        $seed->delete();
+        $deleteResponse2 = $this->actingAs($admin)->delete('/admin/categories/delete/'.$category->id);
+        $deleteResponse2->assertSessionHas('success');
+        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+    }
+
+    public function test_admin_can_view_customers_list(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin_cust@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $customer = User::create([
+            'name' => 'កសិករ រ័ត្ន',
+            'email' => 'roth_farmer@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'customer',
+        ]);
+
+        Order::create([
+            'user_id' => $customer->id,
+            'total_price' => 45.00,
+            'status' => 'completed',
+            'customer_name' => $customer->name,
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Battambang',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/customers');
+        $response->assertStatus(200);
+        $response->assertSee('គ្រប់គ្រងបញ្ជីអតិថិជន');
+        $response->assertSee('កសិករ រ័ត្ន');
+        $response->assertSee('roth_farmer@smartagro.kh');
+        $response->assertSee('$45.00');
     }
 }
