@@ -701,7 +701,7 @@
             <a href="#featured-seeds-section" class="btn btn-warning fw-bold rounded-pill px-4 py-2.5 shadow-sm me-2 text-dark">
                 <i class="fa-solid fa-basket-shopping me-1"></i> ទិញគ្រាប់ពូជឥឡូវនេះ
             </a>
-            <a href="https://t.me/" target="_blank" class="btn btn-outline-light fw-bold rounded-pill px-3 py-2.5 mt-2 mt-sm-0">
+            <a href="https://t.me/Hor_Tola12" target="_blank" class="btn btn-outline-light fw-bold rounded-pill px-3 py-2.5 mt-2 mt-sm-0">
                 <i class="fa-brands fa-telegram me-1"></i> ទាក់ទង Telegram
             </a>
         </div>

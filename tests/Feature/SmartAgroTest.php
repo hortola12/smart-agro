@@ -115,7 +115,7 @@ class SmartAgroTest extends TestCase
             'delivery_address' => 'ភូមិតាក្រាម ឃុំតាក្រាម ស្រុកបាណន់ ខេត្តបាត់ដំបង',
         ]);
 
-        $response->assertRedirect('/');
+        $response->assertRedirect('/my-orders');
 
         // Verify order has user_id
         $this->assertDatabaseHas('orders', [

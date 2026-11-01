@@ -438,7 +438,7 @@ class SeedController extends Controller
 
             session()->forget('cart');
 
-            return redirect('/')->with('success', 'ការកម្ម៉ង់ទិញរបស់អ្នកទទួលបានជោគជ័យ! យើងនឹងទាក់ទងទៅអ្នកក្នុងពេលឆាប់ៗ។');
+            return redirect('/my-orders')->with('success', 'ការកម្ម៉ង់ទិញរបស់អ្នកទទួលបានជោគជ័យ! លោកអ្នកអាចពិនិត្យស្ថានភាពដឹកជញ្ជូន ឬបោះពុម្ពវិក្កយបត្រនៅទីនេះ។');
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', $e->getMessage() ?: 'មានបញ្ហាបច្ចេកទេសក្នុងការរក្សាទុកការបញ្ជាទិញ សូមព្យាយាមម្តងទៀត!');
         }
