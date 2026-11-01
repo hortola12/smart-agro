@@ -32,7 +32,7 @@
         .grow-auth-pill {
             border-radius: 50px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
             padding: 6px 16px;
             transition: all 0.3s ease;
         }
@@ -248,7 +248,7 @@
             <div class="d-flex align-items-center gap-3">
                 <span>
                     <i class="fa-solid fa-phone text-warning me-1"></i> ជំនួយកសិករ៖
-                    <a href="tel:053952888" class="text-white text-decoration-none fw-bold hover-warning">053 952 888</a>
+                    <a href="tel:0883322318" class="text-white text-decoration-none fw-bold hover-warning">088 3322 318</a>
                 </span>
                 <span class="opacity-50">|</span>
                 <span>
@@ -260,7 +260,7 @@
                     <i class="fa-solid fa-truck-fast text-warning me-1"></i> ដឹកជញ្ជូនរហ័ស ២៥ ខេត្ត-ក្រុង
                 </span>
                 <span class="opacity-50">|</span>
-                <a href="https://t.me/" target="_blank" class="text-white text-decoration-none fw-bold hover-warning">
+                <a href="https://t.me/Hor_Tola12" target="_blank" class="text-white text-decoration-none fw-bold hover-warning">
                     <i class="fa-brands fa-telegram text-info me-1"></i> Telegram Channel
                 </a>
                 <span class="opacity-50">|</span>
@@ -308,7 +308,7 @@
 
             <!-- Navbar Links & Search & Right Actions -->
             <div class="collapse navbar-collapse" id="navbarMainCollapse">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-bold" style="font-size: 14px;">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-bold" style="font-size: 14px; padding:4px">
                     <li class="nav-item">
                         <a class="nav-link nav-link-custom {{ Request::is('/') ? 'active' : '' }}" href="{{ url('/') }}">
                             <i class="fa-solid fa-house me-1"></i> {{ __('menu_home') ?? 'ទំព័រដើម' }}
@@ -401,14 +401,14 @@
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 pt-2 pt-lg-0 border-top border-white border-opacity-10 border-lg-0">
                     <!-- 1. Traceability QR Code Action Pill -->
                     <a href="{{ url('/traceability') }}" class="nav-action-pill {{ Request::is('traceability*') || Request::is('trace*') ? 'active' : '' }}">
-                        <i class="fa-solid fa-qrcode text-warning me-1.5 fs-6"></i>
-                        <span>តាមដានប្រភព QR</span>
+                        <i class="fa-solid fa-qrcode text-warning me-1.5 fs-6"> </i>
+                        <span style="padding:4px"> តាមដានប្រភព QR</span>
                     </a>
 
                     <!-- 2. Fast Order Tracking Action Pill -->
                     <a href="{{ url('/order-tracking') }}" class="nav-action-pill {{ Request::is('order-tracking*') ? 'active' : '' }}">
                         <i class="fa-solid fa-truck-fast text-info me-1.5 fs-6"></i>
-                        <span>តាមដានដឹកជញ្ជូន</span>
+                        <span style="padding:4px">តាមដានដឹកជញ្ជូន</span>
                     </a>
 
                     <!-- Search Input -->
@@ -441,9 +441,9 @@
                     <!-- Cart Button (Desktop) -->
                     <a href="{{ url('/cart') }}" class="btn btn-warning btn-sm fw-bold rounded-pill shadow-sm d-inline-flex align-items-center px-3 text-dark" style="height: 38px;">
                         <i class="fa-solid fa-basket-shopping me-1.5"></i>
-                        <span style="font-size: 13px;">{{ __('cart') ?? 'កន្ត្រក' }}</span>
+                        <span style="font-size: 13px; padding:3px">{{ __('cart') ?? 'កន្ត្រក' }}</span>
                         @if(session('cart') && count(session('cart')) > 0)
-                        <span class="badge rounded-pill bg-danger ms-1.5 font-monospace shadow-sm" style="font-size: 10.5px;">
+                        <span class="badge rounded-pill bg-danger ms-1.5 font-monospace shadow-sm" style="font-size: 10.5px; ">
                             {{ count(session('cart')) }}
                         </span>
                         @endif

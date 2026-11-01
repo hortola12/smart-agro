@@ -176,7 +176,7 @@
                     <i class="fa-solid fa-wheat-awn"></i>
                 </span>
                 <span>{{ __('featured_seeds') }}</span>
-            </h4>
+            </h4> <br>
             <small class="text-muted d-block mt-2">
                 បង្ហាញ <span id="visible-seeds-count" class="fw-bold text-success">{{ $seeds->count() }}</span> ក្នុងចំណោម {{ $seeds->count() }} មុខគ្រាប់ពូជ
             </small>
