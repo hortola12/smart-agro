@@ -11,6 +11,16 @@
 <body>
 
     <div class="auth-premium-card">
+        <!-- Top Back to Home Navigation -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{{ url('/') }}" class="text-decoration-none text-muted small fw-bold d-inline-flex align-items-center hover-success" style="transition: all 0.2s ease;">
+                <i class="fa-solid fa-arrow-left-long me-2"></i> ត្រឡប់ទៅទំព័រដើម (Home)
+            </a>
+            <a href="{{ url('/') }}" class="d-flex align-items-center text-success text-decoration-none fw-bold small">
+                <i class="fa-solid fa-seedling me-1"></i> Grow2Growth
+            </a>
+        </div>
+
         <div class="auth-header-wrapper">
             <div class="auth-brand-badge">
                 <i class="fa-solid fa-user-plus me-1.5"></i> JOIN COMMUNITY

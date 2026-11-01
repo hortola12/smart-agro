@@ -459,4 +459,79 @@ class SmartAgroTest extends TestCase
         $response->assertSee('BATCH-LABEL-01');
         $response->assertSee('សន្លឹកបោះពុម្ពស្លាក QR');
     }
+
+    public function test_public_order_tracking_finds_order_by_phone_and_order_id(): void
+    {
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ត្រសក់ទ្រើង',
+            'name_en' => 'Cucumber',
+            'price' => 3.0,
+            'stock' => 20,
+            'batch_number' => 'BATCH-CUC-01',
+        ]);
+
+        $order = Order::create([
+            'customer_name' => 'សុខ គង់',
+            'customer_phone' => '012999888',
+            'delivery_address' => 'ក្រុងបាត់ដំបង',
+            'total_price' => 15.0,
+            'status' => 'shipping',
+        ]);
+
+        $order->items()->create([
+            'seed_id' => $seed->id,
+            'quantity' => 5,
+            'price' => 3.0,
+            'subtotal' => 15.0,
+        ]);
+
+        // 1. Initial page load without search
+        $response = $this->get('/order-tracking');
+        $response->assertStatus(200);
+        $response->assertSee('តាមដានស្ថានភាពការកម្ម៉ង់');
+
+        // 2. Search by phone number
+        $searchByPhone = $this->get('/order-tracking?search=012999888');
+        $searchByPhone->assertStatus(200);
+        $searchByPhone->assertSee('សុខ គង់');
+        $searchByPhone->assertSee('15.00');
+        $searchByPhone->assertSee('កំពុងដឹកជញ្ជូន');
+
+        // 3. Search by Order Reference #ORD-00001 or ID
+        $searchById = $this->get('/order-tracking?search='.urlencode('#ORD-'.str_pad($order->id, 5, '0', STR_PAD_LEFT)));
+        $searchById->assertStatus(200);
+        $searchById->assertSee('សុខ គង់');
+
+        // 4. Search by plain order ID
+        $searchByNum = $this->get('/order-tracking?search='.$order->id);
+        $searchByNum->assertStatus(200);
+        $searchByNum->assertSee('សុខ គង់');
+    }
+
+    public function test_admin_orders_filter_by_date_and_displays_kpi_cards(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Filter',
+            'email' => 'admin_filter@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        Order::create([
+            'customer_name' => 'Customer Today',
+            'customer_phone' => '098111222',
+            'delivery_address' => 'Phnom Penh',
+            'total_price' => 25.0,
+            'status' => 'pending',
+            'created_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/orders?date_filter=today');
+        $response->assertStatus(200);
+        $response->assertSee('ការកម្ម៉ង់សរុប');
+        $response->assertSee('ចំណូលសរុប');
+        $response->assertSee('Customer Today');
+    }
 }

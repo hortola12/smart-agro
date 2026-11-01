@@ -15,10 +15,15 @@
                 តាមដានស្ថានភាពវេចខ្ចប់ ដឹកជញ្ជូន និងមើលវិក្កយបត្រទិញដូររបស់លោកអ្នក
             </p>
         </div>
-        <a href="{{ url('/#featured-seeds-section') }}" class="btn btn-success fw-bold rounded-pill px-4 py-2 shadow-sm order-btn">
-            <i class="fa-solid fa-basket-shopping me-2"></i>
-            ទិញគ្រាប់ពូជបន្ថែម
-        </a>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url('/order-tracking') }}" class="btn btn-outline-success fw-bold rounded-pill px-3 py-2 shadow-sm order-btn">
+                <i class="fa-solid fa-truck-fast me-1.5"></i> ស្វែងរកតាមលេខទូរស័ព្ទ
+            </a>
+            <a href="{{ url('/#featured-seeds-section') }}" class="btn btn-success fw-bold rounded-pill px-4 py-2 shadow-sm order-btn">
+                <i class="fa-solid fa-basket-shopping me-2"></i>
+                ទិញគ្រាប់ពូជបន្ថែម
+            </a>
+        </div>
     </div>
 
     <div class="card border-0 history-card shadow-sm overflow-hidden mb-5 bg-white rounded-4">

@@ -520,9 +520,34 @@ class SeedController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Date Filter (Today, This Week, This Month, or Custom Range)
+        if ($request->filled('date_filter')) {
+            if ($request->date_filter === 'today') {
+                $query->whereDate('created_at', today());
+            } elseif ($request->date_filter === 'this_week') {
+                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            } elseif ($request->date_filter === 'this_month') {
+                $query->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+            }
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
         $orders = $query->paginate(10)->withQueryString();
 
-        return view('admin.orders', compact('orders'));
+        // ស្ថិតិ KPI សង្ខេបសម្រាប់បង្ហាញលើផ្ទាំង Orders
+        $totalOrdersCount = Order::count();
+        $totalRevenue = Order::where('status', '!=', 'cancelled')->sum('total_price');
+        $pendingCount = Order::where('status', 'pending')->count();
+        $completedCount = Order::where('status', 'completed')->count();
+
+        return view('admin.orders', compact('orders', 'totalOrdersCount', 'totalRevenue', 'pendingCount', 'completedCount'));
     }
 
     /**
@@ -717,6 +742,33 @@ class SeedController extends Controller
 
         // បោះទៅកាន់ទំព័រ my_orders.blade.php របស់អតិថិជន
         return view('my_orders', compact('orders'));
+    }
+
+    /**
+     *  បន្ថែមថ្មី៖ មុខងារតាមដានការកម្ម៉ង់ទូទៅសម្រាប់កសិករ/អតិថិជន (Public Order Tracking by Phone or ID)
+     */
+    public function orderTracking(Request $request)
+    {
+        $search = trim($request->input('search', ''));
+        $orders = collect();
+
+        if ($search !== '') {
+            $cleanSearch = preg_replace('/^#?ORD-0*/i', '', $search);
+
+            $orders = Order::with('items.seed')
+                ->where(function ($q) use ($search, $cleanSearch) {
+                    $q->where('customer_phone', 'LIKE', "%{$search}%")
+                        ->orWhere('customer_name', 'LIKE', "%{$search}%");
+
+                    if (is_numeric($cleanSearch)) {
+                        $q->orWhere('id', (int) $cleanSearch);
+                    }
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('order_tracking', compact('orders', 'search'));
     }
 
     /**

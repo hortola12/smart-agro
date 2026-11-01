@@ -27,18 +27,74 @@
         </a>
     </div>
 
-    <!-- 🔍 ប្រអប់ស្វែងរក និង Filter ស្ថានភាព -->
+    <!-- 📊 KPI សង្ខេបផ្នែកហិរញ្ញវត្ថុ & ការកម្ម៉ង់ (Financial & Order KPI Cards) -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100 border-start border-4 border-primary">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small d-block">ការកម្ម៉ង់សរុប</span>
+                        <h4 class="fw-bold text-dark mb-0 font-monospace">{{ $totalOrdersCount ?? $orders->total() }}</h4>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-boxes-stacked fs-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100 border-start border-4 border-success">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small d-block">ចំណូលសរុប</span>
+                        <h4 class="fw-bold text-success mb-0 font-monospace">${{ number_format($totalRevenue ?? 0, 2) }}</h4>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-sack-dollar fs-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100 border-start border-4 border-warning">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small d-block">រង់ចាំពិនិត្យ</span>
+                        <h4 class="fw-bold text-warning mb-0 font-monospace">{{ $pendingCount ?? 0 }}</h4>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-clock-rotate-left fs-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100 border-start border-4 border-info">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small d-block">បានដឹកជោគជ័យ</span>
+                        <h4 class="fw-bold text-info mb-0 font-monospace">{{ $completedCount ?? 0 }}</h4>
+                    </div>
+                    <div class="bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fa-solid fa-circle-check fs-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 ប្រអប់ស្វែងរក និង Filter ស្ថានភាព & កាលបរិច្ឆេទ -->
     <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
         <form action="{{ url('/admin/orders') }}" method="GET" class="row g-2 align-items-center m-0">
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <div class="input-group">
                     <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
                     <input type="text" name="search" class="form-control bg-light border-start-0" placeholder="ស្វែងរកតាមឈ្មោះ, លេខទូរស័ព្ទ ឬលេខវិក្កយបត្រ..." value="{{ request('search') }}">
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <select name="status" class="form-select bg-light">
-                    <option value="all">-- ស្ថានភាពទាំងអស់ (All Statuses) --</option>
+                    <option value="all">-- ស្ថានភាពទាំងអស់ --</option>
                     <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>🟡 រង់ចាំពិនិត្យ (Pending)</option>
                     <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>🔵 កំពុងរៀបចំ (Processing)</option>
                     <option value="shipping" {{ request('status') == 'shipping' ? 'selected' : '' }}>🚚 កំពុងដឹកជញ្ជូន (Shipping)</option>
@@ -46,11 +102,19 @@
                     <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>🔴 បានបោះបង់ (Cancelled)</option>
                 </select>
             </div>
-            <div class="col-md-3 d-flex gap-2">
+            <div class="col-md-3">
+                <select name="date_filter" class="form-select bg-light">
+                    <option value="">-- កាលបរិច្ឆេទទាំងអស់ (All Time) --</option>
+                    <option value="today" {{ request('date_filter') == 'today' ? 'selected' : '' }}>📅 ថ្ងៃនេះ (Today)</option>
+                    <option value="this_week" {{ request('date_filter') == 'this_week' ? 'selected' : '' }}>📅 សប្ដាហ៍នេះ (This Week)</option>
+                    <option value="this_month" {{ request('date_filter') == 'this_month' ? 'selected' : '' }}>📅 ខែនេះ (This Month)</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-success fw-bold rounded-pill px-3 w-100">
                     <i class="fa-solid fa-filter me-1"></i> ស្វែងរក
                 </button>
-                @if(request('search') || (request('status') && request('status') !== 'all'))
+                @if(request('search') || (request('status') && request('status') !== 'all') || request('date_filter'))
                     <a href="{{ url('/admin/orders') }}" class="btn btn-light border fw-bold rounded-pill px-3" title="លុប Filter">
                         <i class="fa-solid fa-rotate-left"></i>
                     </a>

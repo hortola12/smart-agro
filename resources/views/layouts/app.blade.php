@@ -552,13 +552,19 @@
             <span class="dock-tooltip">🛒 កន្ត្រកទំនិញ ({{ count(session('cart', [])) }})</span>
         </a>
 
-        <!-- 2. Order History -->
+        <!-- 2. Order History (My Orders) -->
         <a href="{{ url('/my-orders') }}" class="dock-item {{ Request::is('my-orders*') ? 'dock-active' : '' }}">
             <i class="fa-solid fa-receipt"></i>
             <span class="dock-tooltip">📦 ប្រវត្តិកម្ម៉ង់ទិញ (My Orders)</span>
         </a>
 
-        <!-- 3. Trace Batch QR -->
+        <!-- 3. Fast Order Tracking (By Phone / ID) -->
+        <a href="{{ url('/order-tracking') }}" class="dock-item {{ Request::is('order-tracking*') ? 'dock-active' : '' }}">
+            <i class="fa-solid fa-truck-fast"></i>
+            <span class="dock-tooltip">🚚 តាមដានការដឹកជញ្ជូន (Track Order)</span>
+        </a>
+
+        <!-- 4. Trace Batch QR -->
         <a href="{{ url('/traceability') }}" class="dock-item {{ Request::is('traceability*') || Request::is('trace*') ? 'dock-active' : '' }}">
             <i class="fa-solid fa-qrcode"></i>
             <span class="dock-tooltip">🔍 តាមដានលេខបាច់ (Trace Batch)</span>

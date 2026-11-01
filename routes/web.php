@@ -41,6 +41,9 @@ Route::get('/traceability', function () {
     return view('traceability_search');
 });
 
+// ៤. ទំព័រតាមដានស្ថានភាពការកម្ម៉ង់ទូទៅ (Public Order Tracking)
+Route::get('/order-tracking', [SeedController::class, 'orderTracking'])->name('order.tracking');
+
 /* ==========================================================================
    🛒 PUBLIC CART SESSION ROUTES (ប្រព័ន្ធកន្ត្រកទំនិញទូទៅ)
    ========================================================================== */
