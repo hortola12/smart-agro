@@ -123,6 +123,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($seeds->hasPages())
+                <div class="p-3 border-top d-flex justify-content-end bg-white">
+                    {{ $seeds->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
         </div>
     </div>
 

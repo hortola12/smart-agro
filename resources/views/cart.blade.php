@@ -86,38 +86,54 @@
                         <span class="total-price text-danger fw-bold fs-4 font-monospace">${{ number_format($total, 2) }}</span>
                     </div>
 
-                    <h6 class="fw-bold text-dark mb-3 d-flex align-items-center" style="font-family: 'Kantumruy Pro', sans-serif;">
-                        <i class="fa-solid fa-truck text-success me-2"></i>ព័ត៌មានដឹកជញ្ជូន (Delivery Info)
-                    </h6>
+                    @auth
+                        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center" style="font-family: 'Kantumruy Pro', sans-serif;">
+                            <i class="fa-solid fa-truck text-success me-2"></i>ព័ត៌មានដឹកជញ្ជូន (Delivery Info)
+                        </h6>
 
-                    <form action="{{ url('/checkout') }}" method="POST" class="m-0">
-                        @csrf
+                        <form action="{{ url('/checkout') }}" method="POST" class="m-0">
+                            @csrf
 
-                        <div class="form-floating mb-3">
-                            <input type="text" name="customer_name" class="form-control rounded-3" id="floatingName" placeholder="ឈ្មោះ"
-                                value="{{ auth()->check() ? auth()->user()->name : '' }}" required>
-                            <label for="floatingName" class="text-muted small fw-bold">
-                                ឈ្មោះអ្នកទទួលទំនិញ <span class="text-danger">*</span>
-                            </label>
+                            <div class="form-floating mb-3">
+                                <input type="text" name="customer_name" class="form-control rounded-3" id="floatingName" placeholder="ឈ្មោះ"
+                                    value="{{ auth()->user()->name }}" required>
+                                <label for="floatingName" class="text-muted small fw-bold">
+                                    ឈ្មោះអ្នកទទួលទំនិញ <span class="text-danger">*</span>
+                                </label>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input type="text" name="customer_phone" class="form-control rounded-3" id="floatingPhone" placeholder="លេខទូរស័ព្ទ"
+                                    value="{{ auth()->user()->phone ?? '' }}" required>
+                                <label for="floatingPhone" class="text-muted small fw-bold">
+                                    លេខទូរស័ព្ទទំនាក់ទំនង <span class="text-danger">*</span>
+                                </label>
+                            </div>
+
+                            <div class="form-floating mb-4">
+                                <textarea name="delivery_address" class="form-control rounded-3" id="floatingAddress" placeholder="អាសយដ្ឋាន" style="height: 100px" required>{{ auth()->user()->address ?? '' }}</textarea>
+                                <label for="floatingAddress" class="text-muted small fw-bold">អាសយដ្ឋានដឹកជញ្ជូនលម្អិត <span class="text-danger">*</span></label>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100 fw-bold btn-lg rounded-pill shadow checkout-btn py-2.5" style="font-size: 16px;">
+                                <i class="fa-solid fa-circle-check me-2"></i>រក្សាទុក និងបញ្ជាក់ការទិញ
+                            </button>
+                        </form>
+                    @else
+                        <div class="p-3 bg-light rounded-4 border text-center mb-3">
+                            <div class="mb-2 text-success">
+                                <i class="fa-solid fa-lock fs-3"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1" style="font-family: 'Kantumruy Pro', sans-serif;">សូមចូលប្រើប្រាស់គណនី</h6>
+                            <p class="text-muted small mb-3">ដើម្បីធ្វើការបញ្ជាទិញ និងតាមដានប្រវត្តិវិក្កយបត្រ សូមចូលប្រើប្រាស់ ឬចុះឈ្មោះជាមុនសិន។</p>
+                            <a href="{{ route('login') }}" class="btn btn-success w-100 fw-bold rounded-pill shadow-sm py-2 mb-2 d-flex align-items-center justify-content-center" style="font-size: 15px;">
+                                <i class="fa-solid fa-right-to-bracket me-2"></i>ចូលប្រើប្រាស់ (Login)
+                            </a>
+                            <a href="{{ route('register') }}" class="btn btn-outline-secondary w-100 fw-bold rounded-pill py-2 small" style="font-size: 13.5px;">
+                                <i class="fa-solid fa-user-plus me-1"></i>ចុះឈ្មោះគណនីថ្មី
+                            </a>
                         </div>
-
-                        <div class="form-floating mb-3">
-                            <input type="text" name="customer_phone" class="form-control rounded-3" id="floatingPhone" placeholder="លេខទូរស័ព្ទ"
-                                value="{{ auth()->check() && isset(auth()->user()->phone) ? auth()->user()->phone : '' }}" required>
-                            <label for="floatingPhone" class="text-muted small fw-bold">
-                                លេខទូរស័ព្ទទំនាក់ទំនង <span class="text-danger">*</span>
-                            </label>
-                        </div>
-
-                        <div class="form-floating mb-4">
-                            <textarea name="delivery_address" class="form-control rounded-3" id="floatingAddress" placeholder="អាសយដ្ឋាន" style="height: 100px" required>{{ auth()->check() && isset(auth()->user()->address) ? auth()->user()->address : '' }}</textarea>
-                            <label for="floatingAddress" class="text-muted small fw-bold">អាសយដ្ឋានដឹកជញ្ជូនលម្អិត <span class="text-danger">*</span></label>
-                        </div>
-
-                        <button type="submit" class="btn btn-success w-100 fw-bold btn-lg rounded-pill shadow checkout-btn py-2.5" style="font-size: 16px;">
-                            <i class="fa-solid fa-circle-check me-2"></i>រក្សាទុក និងបញ្ជាក់ការទិញ
-                        </button>
-                    </form>
+                    @endauth
                 </div>
             </div>
             </div>

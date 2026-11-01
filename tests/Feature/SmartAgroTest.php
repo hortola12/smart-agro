@@ -127,4 +127,57 @@ class SmartAgroTest extends TestCase
         $historyResponse->assertStatus(200);
         $historyResponse->assertSee('012345678');
     }
+
+    public function test_login_rate_limiting_blocks_after_too_many_attempts(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/login', [
+                'email' => 'wrong@example.com',
+                'password' => 'wrongpass',
+            ]);
+        }
+
+        // The 6th attempt should trigger 429 Too Many Requests
+        $response = $this->post('/login', [
+            'email' => 'wrong@example.com',
+            'password' => 'wrongpass',
+        ]);
+
+        $response->assertStatus(429);
+    }
+
+    public function test_admin_seed_list_is_paginated(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $category = Category::create([
+            'name_kh' => 'បន្លែ',
+            'name_en' => 'Vegetables',
+        ]);
+
+        // Create 12 seeds to exceed 10 per page
+        for ($i = 1; $i <= 12; $i++) {
+            Seed::create([
+                'category_id' => $category->id,
+                'name_kh' => "ពូជទី {$i}",
+                'name_en' => "Seed {$i}",
+                'price' => 1.50,
+                'stock' => 20,
+                'batch_number' => "BATCH-{$i}",
+            ]);
+        }
+
+        $response = $this->actingAs($admin)->get('/admin/seeds');
+        $response->assertStatus(200);
+        $response->assertViewHas('seeds');
+
+        $seeds = $response->viewData('seeds');
+        $this->assertEquals(10, $seeds->count()); // Only 10 on page 1
+        $this->assertEquals(12, $seeds->total()); // 12 in total
+    }
 }

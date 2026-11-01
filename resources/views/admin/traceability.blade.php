@@ -95,6 +95,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($traceabilities->hasPages())
+                <div class="p-3 border-top d-flex justify-content-end bg-white">
+                    {{ $traceabilities->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
         </div>
     </div>
 

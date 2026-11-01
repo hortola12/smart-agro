@@ -110,6 +110,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($orders->hasPages())
+                <div class="p-3 border-top d-flex justify-content-end bg-white">
+                    {{ $orders->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
         </div>
     </div>
 @endsection

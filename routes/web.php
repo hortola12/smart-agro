@@ -69,7 +69,7 @@ Route::post('/login', function (Request $request) {
     }
 
     return back()->withErrors(['email' => 'អ៊ីមែល ឬលេខកូដសម្ងាត់របស់អ្នកមិនត្រឹមត្រូវឡើយ។'])->onlyInput('email');
-});
+})->middleware('throttle:5,1');
 
 // ២. ទំព័រចុះឈ្មោះសមាជិកថ្មី (Register)
 Route::get('/register', function () {

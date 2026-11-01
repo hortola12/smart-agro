@@ -94,8 +94,7 @@ class SeedController extends Controller
      */
     public function index()
     {
-
-        $seeds = Seed::with('category')->orderBy('created_at', 'desc')->get();
+        $seeds = Seed::with('category')->orderBy('created_at', 'desc')->paginate(10);
 
         return view('admin.seeds', compact('seeds'));
     }
@@ -309,10 +308,7 @@ class SeedController extends Controller
      */
     public function adminTraceability()
     {
-        // $traceabilities = SeedTraceability::with('seed')->orderBy('created_at', 'desc')->get();
-        // return view('admin.traceability', compact('traceabilities'));
-
-        $traceabilities = SeedTraceability::with('seed')->orderBy('created_at', 'desc')->get();
+        $traceabilities = SeedTraceability::with('seed')->orderBy('created_at', 'desc')->paginate(10);
 
         return view('admin.traceability', compact('traceabilities'));
     }
@@ -382,7 +378,7 @@ class SeedController extends Controller
         ]);
 
         $cart = session()->get('cart');
-        if (! $cart) {
+        if (empty($cart)) {
             return redirect()->back()->with('error', 'កន្ត្រកទំនិញរបស់អ្នកនៅទទេឡើយ!');
         }
 
@@ -391,36 +387,36 @@ class SeedController extends Controller
             $totalPrice += $item['price'] * $item['quantity'];
         }
 
-        // រក្សាទុកទៅក្នុងតារាង orders
-        $order = Order::create([
-            'user_id' => Auth::id(),
-            'customer_name' => $request->customer_name,
-            'customer_phone' => $request->customer_phone,
-            'delivery_address' => $request->delivery_address,
-            'total_price' => $totalPrice,
-            'status' => 'pending',
-        ]);
+        try {
+            DB::transaction(function () use ($request, $cart, $totalPrice) {
+                // រក្សាទុកទៅក្នុងតារាង orders
+                $order = Order::create([
+                    'user_id' => Auth::id(),
+                    'customer_name' => $request->customer_name,
+                    'customer_phone' => $request->customer_phone,
+                    'delivery_address' => $request->delivery_address,
+                    'total_price' => $totalPrice,
+                    'status' => 'pending',
+                ]);
 
-        // រក្សាទុកទំនិញនិមួយៗទៅក្នុងតារាង order_items
-        foreach ($cart as $id => $details) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'seed_id' => $id,
-                'quantity' => $details['quantity'],
-                'price' => $details['price'],
-                'subtotal' => $details['price'] * $details['quantity'],
-            ]);
+                // រក្សាទុកទំនិញនិមួយៗទៅក្នុងតារាង order_items
+                foreach ($cart as $id => $details) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'seed_id' => $id,
+                        'quantity' => $details['quantity'],
+                        'price' => $details['price'],
+                        'subtotal' => $details['price'] * $details['quantity'],
+                    ]);
+                }
+            });
 
-            // កាត់ស្តុកគ្រាប់ពូជចេញពីតារាង seeds ភ្លាមៗ
-            // $seed = Seed::find($id);
-            // if($seed) {
-            //     $seed->decrement('stock', $details['quantity']);
-            // }
+            session()->forget('cart');
+
+            return redirect('/')->with('success', 'ការកម្ម៉ង់ទិញរបស់អ្នកទទួលបានជោគជ័យ! យើងនឹងទាក់ទងទៅអ្នកក្នុងពេលឆាប់ៗ។');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'មានបញ្ហាបច្ចេកទេសក្នុងការរក្សាទុកការបញ្ជាទិញ សូមព្យាយាមម្តងទៀត!');
         }
-
-        session()->forget('cart');
-
-        return redirect('/')->with('success', 'ការកម្ម៉ង់ទិញរបស់អ្នកទទួលបានជោគជ័យ! យើងនឹងទាក់ទងទៅអ្នកក្នុងពេលឆាប់ៗ។');
     }
 
     /**
@@ -504,7 +500,7 @@ class SeedController extends Controller
      */
     public function adminOrders()
     {
-        $orders = Order::with('items.seed')->orderBy('created_at', 'desc')->get();
+        $orders = Order::with('items.seed')->orderBy('created_at', 'desc')->paginate(10);
 
         return view('admin.orders', compact('orders'));
     }
