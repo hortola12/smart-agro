@@ -17,9 +17,14 @@
         </div>
     @endif
 
-    <div class="mb-4">
-        <h4 class="fw-bold text-dark mb-1" style="font-family: 'Kantumruy Pro', sans-serif;">គ្រប់គ្រងការកម្ម៉ង់ទិញ (Orders)</h4>
-        <p class="text-muted small mb-0">ពិនិត្យមើលបញ្ជីឈ្មោះអ្នកទិញគ្រាប់ពូជ គ្រប់គ្រងស្ថានភាពដឹកជញ្ជូន និងព្រីនវិក្កយបត្រផ្លូវការ</p>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1" style="font-family: 'Kantumruy Pro', sans-serif;">គ្រប់គ្រងការកម្ម៉ង់ទិញ (Orders)</h4>
+            <p class="text-muted small mb-0">ពិនិត្យមើលបញ្ជីឈ្មោះអ្នកទិញគ្រាប់ពូជ គ្រប់គ្រងស្ថានភាពដឹកជញ្ជូន និងព្រីនវិក្កយបត្រផ្លូវការ</p>
+        </div>
+        <a href="{{ url('/admin/orders/export') }}" class="btn btn-outline-success fw-bold rounded-pill px-4 shadow-sm">
+            <i class="fa-solid fa-file-csv me-1.5"></i> ទាញយករបាយការណ៍ CSV
+        </a>
     </div>
 
     <!-- 🔍 ប្រអប់ស្វែងរក និង Filter ស្ថានភាព -->

@@ -615,13 +615,38 @@ class SeedController extends Controller
             ->take(5)
             ->get();
 
+        // គ្រាប់ពូជដែលជិតអស់ពីស្តុក សម្រាប់បង្ហាញផ្ទាំង Alert & Restock លើ Dashboard
+        $low_stock_seeds = Seed::with('category')->where('stock', '<=', 5)->orderBy('stock', 'asc')->get();
+
+        // ស្ថិតិចំណូល ៦ ខែចុងក្រោយសម្រាប់គូរ Visual Chart
+        $monthlySales = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $monthDate = now()->subMonths($i);
+            $monthStart = $monthDate->copy()->startOfMonth();
+            $monthEnd = $monthDate->copy()->endOfMonth();
+            $monthLabel = $monthStart->format('M Y');
+            $revenue = Order::whereBetween('created_at', [$monthStart, $monthEnd])->sum('total_price');
+            $ordersCount = Order::whereBetween('created_at', [$monthStart, $monthEnd])->count();
+            $monthlySales[] = [
+                'month' => $monthLabel,
+                'revenue' => round($revenue, 2),
+                'orders' => $ordersCount,
+            ];
+        }
+
+        // ចំណែកប្រភេទបន្លែសម្រាប់ Doughnut Chart
+        $categoryStats = Category::withCount('seeds')->get();
+
         return view('admin.dashboard', compact(
             'total_revenue',
             'pending_orders_count',
             'total_seeds_count',
             'low_stock_count',
             'recent_orders',
-            'bestSellers'
+            'bestSellers',
+            'low_stock_seeds',
+            'monthlySales',
+            'categoryStats'
         ));
     }
 
@@ -792,5 +817,131 @@ class SeedController extends Controller
         $totalOrdersCount = Order::count();
 
         return view('admin.customers', compact('customers', 'totalUsersCount', 'totalCustomersCount', 'totalOrdersCount'));
+    }
+
+    /**
+     * ៣២. មុខងារបន្ថែមស្តុកគ្រាប់ពូជបន្ទាន់ (Quick Restock)
+     */
+    public function quickRestock(Request $request, $id)
+    {
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $seed = Seed::findOrFail($id);
+        $seed->increment('stock', $request->quantity);
+
+        return redirect()->back()->with('success', "បានបន្ថែមស្តុកគ្រាប់ពូជ '{$seed->name_kh}' ចំនួន +{$request->quantity} កញ្ចប់ជោគជ័យ! ស្តុកសរុបបច្ចុប្បន្ន៖ {$seed->stock}");
+    }
+
+    /**
+     * ៣៣. មុខងារទាញយករបាយការណ៍ការកម្ម៉ង់ជាទម្រង់ CSV (Export Orders CSV)
+     */
+    public function exportOrdersCsv()
+    {
+        $orders = Order::with('items.seed')->orderBy('created_at', 'desc')->get();
+        $filename = 'orders-report-'.date('Y-m-d').'.csv';
+
+        $callback = function () use ($orders) {
+            $handle = fopen('php://output', 'w');
+            // Write UTF-8 BOM so Microsoft Excel renders Khmer text properly
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($handle, [
+                'Order ID',
+                'Date',
+                'Customer Name',
+                'Customer Phone',
+                'Delivery Address',
+                'Status',
+                'Total Amount ($)',
+                'Items Purchased',
+            ]);
+
+            foreach ($orders as $order) {
+                $itemsSummary = $order->items->map(function ($item) {
+                    return ($item->seed ? $item->seed->name_kh : 'Seed').' (x'.$item->quantity.')';
+                })->implode('; ');
+
+                fputcsv($handle, [
+                    '#ORD-'.str_pad($order->id, 5, '0', STR_PAD_LEFT),
+                    $order->created_at ? $order->created_at->format('Y-m-d H:i') : '-',
+                    $order->customer_name,
+                    $order->customer_phone,
+                    $order->delivery_address,
+                    ucfirst($order->status),
+                    number_format($order->total_price, 2),
+                    $itemsSummary,
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * ៣៤. មុខងារទាញយកទិន្នន័យស្តុកគ្រាប់ពូជជាទម្រង់ CSV (Export Seeds Inventory CSV)
+     */
+    public function exportSeedsCsv()
+    {
+        $seeds = Seed::with(['category', 'traceability'])->orderBy('name_en', 'asc')->get();
+        $filename = 'seeds-inventory-'.date('Y-m-d').'.csv';
+
+        $callback = function () use ($seeds) {
+            $handle = fopen('php://output', 'w');
+            // Write UTF-8 BOM
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($handle, [
+                'ID',
+                'Name (KH)',
+                'Name (EN)',
+                'Category',
+                'Price ($)',
+                'Stock Available',
+                'Batch Number',
+                'Germination Rate (%)',
+                'Harvest Date',
+                'Expiry Date',
+            ]);
+
+            foreach ($seeds as $seed) {
+                fputcsv($handle, [
+                    $seed->id,
+                    $seed->name_kh,
+                    $seed->name_en,
+                    $seed->category?->name_kh ?? 'N/A',
+                    number_format($seed->price, 2),
+                    $seed->stock,
+                    $seed->batch_number ?? '-',
+                    $seed->traceability?->germination_rate ? $seed->traceability->germination_rate.'%' : 'N/A',
+                    $seed->traceability?->harvest_date ?? '-',
+                    $seed->traceability?->expiry_date ?? '-',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * ៣៥. មុខងារបោះពុម្ពស្លាក Sticker គ្រាប់ពូជជាសន្លឹក (Print Packaging Labels Sheet)
+     */
+    public function printLabels(Request $request, $id)
+    {
+        $seed = Seed::with(['category', 'traceability'])->findOrFail($id);
+        $count = max(1, min(24, (int) $request->input('count', 8)));
+
+        return view('admin.print_labels', compact('seed', 'count'));
     }
 }

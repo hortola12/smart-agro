@@ -368,4 +368,95 @@ class SmartAgroTest extends TestCase
         $this->assertNotNull($cart);
         $this->assertEquals(5, $cart[$seed->id]['quantity']);
     }
+
+    public function test_admin_can_quick_restock_seed(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin_restock@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ត្រកួន',
+            'name_en' => 'Morning Glory',
+            'price' => 1.0,
+            'stock' => 5,
+            'batch_number' => 'BATCH-RESTOCK',
+        ]);
+
+        $response = $this->actingAs($admin)->post('/admin/seeds/quick-restock/'.$seed->id, [
+            'quantity' => 25,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertEquals(30, $seed->fresh()->stock);
+    }
+
+    public function test_admin_can_export_orders_and_seeds_csv(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin_csv@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ស្ពៃ',
+            'name_en' => 'Bok Choy',
+            'price' => 2.0,
+            'stock' => 15,
+            'batch_number' => 'BATCH-CSV',
+        ]);
+
+        Order::create([
+            'customer_name' => 'Test Customer',
+            'customer_phone' => '012345678',
+            'delivery_address' => 'Battambang',
+            'total_price' => 20.0,
+            'status' => 'completed',
+        ]);
+
+        // Export Orders CSV
+        $orderCsvResponse = $this->actingAs($admin)->get('/admin/orders/export');
+        $orderCsvResponse->assertStatus(200);
+        $this->assertTrue(str_contains($orderCsvResponse->headers->get('content-type'), 'text/csv'));
+
+        // Export Seeds CSV
+        $seedCsvResponse = $this->actingAs($admin)->get('/admin/seeds/export');
+        $seedCsvResponse->assertStatus(200);
+        $this->assertTrue(str_contains($seedCsvResponse->headers->get('content-type'), 'text/csv'));
+    }
+
+    public function test_admin_can_view_print_labels_sheet(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin_labels@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែយកស្លឹក', 'name_en' => 'Leafy']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'សាឡាត់បាត់ដំបង',
+            'name_en' => 'Battambang Lettuce',
+            'price' => 2.5,
+            'stock' => 50,
+            'batch_number' => 'BATCH-LABEL-01',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/seeds/print-labels/'.$seed->id.'?count=8');
+        $response->assertStatus(200);
+        $response->assertSee('សាឡាត់បាត់ដំបង');
+        $response->assertSee('BATCH-LABEL-01');
+        $response->assertSee('សន្លឹកបោះពុម្ពស្លាក QR');
+    }
 }

@@ -161,4 +161,14 @@ Route::middleware([AdminMiddleware::class])->group(function () {
 
     // ៦. គ្រប់គ្រងបញ្ជីអតិថិជន (Admin Customers Management)
     Route::get('/admin/customers', [SeedController::class, 'adminCustomers']);
+
+    // ៧. បន្ថែមស្តុកបន្ទាន់ (Quick Restock)
+    Route::post('/admin/seeds/quick-restock/{id}', [SeedController::class, 'quickRestock']);
+
+    // ៨. ទាញយកទិន្នន័យជារបាយការណ៍ CSV (CSV Exports)
+    Route::get('/admin/orders/export', [SeedController::class, 'exportOrdersCsv']);
+    Route::get('/admin/seeds/export', [SeedController::class, 'exportSeedsCsv']);
+
+    // ៩. បោះពុម្ពស្លាក Sticker គ្រាប់ពូជជាសន្លឹក (Print Packaging Labels)
+    Route::get('/admin/seeds/print-labels/{id}', [SeedController::class, 'printLabels']);
 });
