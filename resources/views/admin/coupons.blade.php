@@ -214,30 +214,45 @@
                                 @endif
                             </td>
                             <td>
-                                @if($coupon->is_active)
-                                    <span class="badge bg-success bg-opacity-15 text-success rounded-pill px-2.5 py-1 fw-bold">
-                                        <i class="fa-solid fa-circle-check me-1"></i>សកម្ម
+                                @if($coupon->expires_at && $coupon->expires_at->isPast())
+                                    <span class="status-pill-trigger status-pill-cancelled py-1 px-3 shadow-sm" style="cursor: default;">
+                                        <span class="status-dot-pulse status-dot-cancelled"></span>
+                                        <span class="fw-bold">ផុតកំណត់</span>
                                     </span>
+                                @elseif($coupon->is_active)
+                                    <form action="{{ url('/admin/coupons/' . $coupon->id . '/toggle') }}" method="POST" class="d-inline m-0">
+                                        @csrf
+                                        <button type="submit" class="status-pill-trigger status-pill-completed py-1 px-3 shadow-sm border-0" title="ចុចដើម្បីផ្អាកដំណើរការ">
+                                            <span class="status-dot-pulse status-dot-completed"></span>
+                                            <span class="fw-bold">សកម្ម (Active)</span>
+                                            <i class="fa-solid fa-pause ms-1 opacity-50" style="font-size: 9px;"></i>
+                                        </button>
+                                    </form>
                                 @else
-                                    <span class="badge bg-secondary bg-opacity-15 text-secondary rounded-pill px-2.5 py-1 fw-bold">
-                                        <i class="fa-solid fa-circle-xmark me-1"></i>បានបិទ
-                                    </span>
+                                    <form action="{{ url('/admin/coupons/' . $coupon->id . '/toggle') }}" method="POST" class="d-inline m-0">
+                                        @csrf
+                                        <button type="submit" class="status-pill-trigger status-pill-pending py-1 px-3 shadow-sm border-0" title="ចុចដើម្បីបើកដំណើរការឡើងវិញ">
+                                            <span class="status-dot-pulse status-dot-pending"></span>
+                                            <span class="fw-bold">បានផ្អាក (Paused)</span>
+                                            <i class="fa-solid fa-play ms-1 opacity-50" style="font-size: 9px;"></i>
+                                        </button>
+                                    </form>
                                 @endif
                             </td>
                             <td class="text-end pe-4">
                                 <div class="d-flex align-items-center justify-content-end gap-1.5">
-                                    <form action="{{ url('/admin/coupons/' . $coupon->id . '/toggle') }}" method="POST" class="d-inline">
+                                    <form action="{{ url('/admin/coupons/' . $coupon->id . '/toggle') }}" method="POST" class="d-inline m-0">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm rounded-pill px-2.5 {{ $coupon->is_active ? 'btn-outline-warning text-dark' : 'btn-outline-success' }}" title="{{ $coupon->is_active ? 'បិទដំណើរការ' : 'បើកដំណើរការ' }}">
+                                        <button type="submit" class="admin-action-btn {{ $coupon->is_active ? 'text-warning' : 'text-success' }} shadow-sm" title="{{ $coupon->is_active ? 'ផ្អាកដំណើរការ' : 'បើកដំណើរការ' }}">
                                             <i class="fa-solid {{ $coupon->is_active ? 'fa-pause' : 'fa-play' }}"></i>
                                         </button>
                                     </form>
 
-                                    <form action="{{ url('/admin/coupons/' . $coupon->id) }}" method="POST" onsubmit="return confirm('តើអ្នកពិតជាចង់លុបលេខកូដបញ្ចុះតម្លៃនេះមែនទេ?')" class="d-inline">
+                                    <form action="{{ url('/admin/coupons/' . $coupon->id) }}" method="POST" onsubmit="return confirm('តើអ្នកពិតជាចង់លុបលេខកូដបញ្ចុះតម្លៃនេះមែនទេ?')" class="d-inline m-0">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-2.5" title="លុបលេខកូដ">
-                                            <i class="fa-solid fa-trash-can"></i>
+                                        <button type="submit" class="admin-action-btn admin-action-btn-delete shadow-sm" title="លុបលេខកូដ">
+                                            <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </form>
                                 </div>

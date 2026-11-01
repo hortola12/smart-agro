@@ -22,7 +22,10 @@
             <h4 class="fw-bold text-dark mb-1" style="font-family: 'Kantumruy Pro', sans-serif;">គ្រប់គ្រងទិន្នន័យគ្រាប់ពូជ</h4>
             <p class="text-muted small mb-0">បន្ថែម កែប្រែ ឬលុបទិន្នន័យគ្រាប់ពូជកសិកម្មក្នុងប្រព័ន្ធ</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url('/admin/seeds/bulk-update') }}" class="btn btn-warning fw-bold rounded-pill px-3 shadow-sm text-dark">
+                <i class="fa-solid fa-bolt me-1.5"></i> កែសម្រួលស្តុក & តម្លៃជាដុំ
+            </a>
             <a href="{{ url('/admin/seeds/export') }}" class="btn btn-outline-success fw-bold rounded-pill px-3 shadow-sm">
                 <i class="fa-solid fa-file-csv me-1.5"></i>ទាញយក CSV
             </a>
@@ -121,10 +124,21 @@
                             <td class="text-danger fw-bold fs-6 font-monospace">${{ number_format($seed->price, 2) }}</td>
 
                             <td>
-                                @if($seed->stock > 0)
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 py-1.5 px-3 rounded-pill">{{ $seed->stock }} កញ្ចប់</span>
+                                @if($seed->stock > 5)
+                                    <span class="status-pill-badge status-pill-completed py-1 px-3 shadow-sm">
+                                        <span class="status-dot-pulse status-dot-completed"></span>
+                                        <span class="fw-bold">{{ $seed->stock }} កញ្ចប់</span>
+                                    </span>
+                                @elseif($seed->stock > 0)
+                                    <span class="status-pill-badge status-pill-pending py-1 px-3 shadow-sm">
+                                        <span class="status-dot-pulse status-dot-pending"></span>
+                                        <span class="fw-bold">សល់ {{ $seed->stock }} កញ្ចប់</span>
+                                    </span>
                                 @else
-                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 py-1.5 px-3 rounded-pill">អស់ពីស្តុក</span>
+                                    <span class="status-pill-badge status-pill-cancelled py-1 px-3 shadow-sm">
+                                        <span class="status-dot-pulse status-dot-cancelled"></span>
+                                        <span class="fw-bold">អស់ពីស្តុក</span>
+                                    </span>
                                 @endif
                             </td>
 

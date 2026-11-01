@@ -100,17 +100,58 @@
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold">អត្រាដុះលូតលាស់ (%) <span class="text-danger">*</span></label>
-                        <input type="number" name="germination_rate" class="form-control font-monospace" placeholder="ឧ. 95" min="0" max="100" value="{{ old('germination_rate') }}" required>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-success border-end-0"><i class="fa-solid fa-percent"></i></span>
+                            <input type="number" name="germination_rate" class="form-control font-monospace border-start-0" placeholder="ឧ. 95" min="0" max="100" value="{{ old('germination_rate', 95) }}" required>
+                        </div>
+                        <small class="text-muted d-block mt-1" style="font-size: 11px;">អត្រាដុះស្តង់ដារ $\ge 85\%$</small>
                     </div>
 
+                    <!-- 📅 កាលបរិច្ឆេទប្រមូលផល (Harvest Date) -->
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">កាលបរិច្ឆេទប្រមូលផល <span class="text-danger">*</span></label>
-                        <input type="text" name="harvest_date" class="form-control" placeholder="ឧ. ចុងខែមករា ឬ 2026-05-29" value="{{ old('harvest_date') }}" required>
+                        <label class="form-label fw-bold text-dark d-flex justify-content-between align-items-center mb-1">
+                            <span><i class="fa-solid fa-calendar-check text-success me-1.5"></i>កាលបរិច្ឆេទប្រមូលផល <span class="text-danger">*</span></span>
+                        </label>
+                        <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                            <input type="date" name="harvest_date" id="harvest_date" class="form-control font-monospace fw-bold text-dark" value="{{ old('harvest_date', date('Y-m-d')) }}" required>
+                        </div>
+                        <div class="d-flex align-items-center gap-1 mt-1.5 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 text-muted rounded-pill" style="font-size: 11px;" onclick="setHarvestPreset(0)">ថ្ងៃនេះ</button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 text-muted rounded-pill" style="font-size: 11px;" onclick="setHarvestPreset(-1)">ម្សិលមិញ</button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 text-muted rounded-pill" style="font-size: 11px;" onclick="setHarvestPreset(-7)">-៧ ថ្ងៃ</button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 text-muted rounded-pill" style="font-size: 11px;" onclick="setHarvestPreset(-30)">-១ ខែ</button>
+                        </div>
                     </div>
 
+                    <!-- 📅 កាលបរិច្ឆេទផុតកំណត់ (Expiry Date) -->
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">កាលបរិច្ឆេទផុតកំណត់ <span class="text-danger">*</span></label>
-                        <input type="text" name="expiry_date" class="form-control" placeholder="ឧ. រយៈពេល ១ឆ្នាំ ឬ 2027-05-29" value="{{ old('expiry_date') }}" required>
+                        <label class="form-label fw-bold text-dark d-flex justify-content-between align-items-center mb-1">
+                            <span><i class="fa-solid fa-calendar-xmark text-danger me-1.5"></i>កាលបរិច្ឆេទផុតកំណត់ <span class="text-danger">*</span></span>
+                        </label>
+                        <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                            <input type="date" name="expiry_date" id="expiry_date" class="form-control font-monospace fw-bold text-dark" value="{{ old('expiry_date', date('Y-m-d', strtotime('+1 year'))) }}" required>
+                        </div>
+                        <div class="d-flex align-items-center gap-1 mt-1.5 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 text-muted rounded-pill" style="font-size: 11px;" onclick="setExpiryPreset(6)">+៦ ខែ</button>
+                            <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 fw-bold rounded-pill" style="font-size: 11px;" onclick="setExpiryPreset(12)" title="ស្តង់ដារគ្រាប់ពូជបន្លែ (១ ឆ្នាំ)">+១ ឆ្នាំ ★</button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 text-muted rounded-pill" style="font-size: 11px;" onclick="setExpiryPreset(18)">+១៨ ខែ</button>
+                            <button type="button" class="btn btn-sm btn-light border py-0 px-2 text-muted rounded-pill" style="font-size: 11px;" onclick="setExpiryPreset(24)">+២ ឆ្នាំ</button>
+                        </div>
+                    </div>
+
+                    <!-- 💡 សុពលភាពគ្រាប់ពូជ (Dynamic Shelf-Life Live Preview Banner) -->
+                    <div class="col-12 mt-2">
+                        <div id="shelf_life_banner" class="p-2.5 rounded-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-2 shadow-sm" style="font-size: 12.5px;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-success bg-opacity-15 text-success rounded-pill px-2.5 py-1" id="shelf_life_badge">
+                                    <i class="fa-solid fa-hourglass-half me-1"></i>សុពលភាព៖ ៣៦៥ ថ្ងៃ
+                                </span>
+                                <span class="text-muted" id="shelf_life_text">គិតចាប់ពីថ្ងៃប្រមូលផល ដល់ថ្ងៃផុតកំណត់</span>
+                            </div>
+                            <small class="text-muted font-monospace" id="date_range_display">
+                                <i class="fa-regular fa-calendar me-1"></i>{{ date('d/m/Y') }} → {{ date('d/m/Y', strtotime('+1 year')) }}
+                            </small>
+                        </div>
                     </div>
 
                     <div class="col-12 mt-4">
@@ -164,4 +205,108 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function setHarvestPreset(daysOffset) {
+            const d = new Date();
+            d.setDate(d.getDate() + daysOffset);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const harvestInput = document.getElementById('harvest_date');
+            if (harvestInput) {
+                harvestInput.value = `${yyyy}-${mm}-${dd}`;
+                setExpiryPreset(12); // Auto adjust expiry date by 1 year from new harvest
+                updateShelfLifePreview();
+            }
+        }
+
+        function setExpiryPreset(monthsToAdd) {
+            const harvestInput = document.getElementById('harvest_date');
+            const expiryInput = document.getElementById('expiry_date');
+            if (!expiryInput) return;
+
+            let baseDate = new Date();
+            if (harvestInput && harvestInput.value) {
+                const parts = harvestInput.value.split('-');
+                if (parts.length === 3) {
+                    baseDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                }
+            }
+
+            baseDate.setMonth(baseDate.getMonth() + monthsToAdd);
+            const yyyy = baseDate.getFullYear();
+            const mm = String(baseDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(baseDate.getDate()).padStart(2, '0');
+            expiryInput.value = `${yyyy}-${mm}-${dd}`;
+            updateShelfLifePreview();
+        }
+
+        function updateShelfLifePreview() {
+            const harvestInput = document.getElementById('harvest_date');
+            const expiryInput = document.getElementById('expiry_date');
+            const badge = document.getElementById('shelf_life_badge');
+            const text = document.getElementById('shelf_life_text');
+            const display = document.getElementById('date_range_display');
+
+            if (!harvestInput || !expiryInput || !badge) return;
+
+            const hVal = harvestInput.value;
+            const eVal = expiryInput.value;
+            if (!hVal || !eVal) return;
+
+            const hDate = new Date(hVal);
+            const eDate = new Date(eVal);
+            const diffDays = Math.ceil((eDate - hDate) / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= 0) {
+                badge.className = 'badge bg-danger bg-opacity-15 text-danger rounded-pill px-2.5 py-1';
+                badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>កាលបរិច្ឆេទមិនត្រឹមត្រូវ!';
+                text.innerText = 'កាលបរិច្ឆេទផុតកំណត់ត្រូវតែក្រោយថ្ងៃប្រមូលផល';
+                if (display) display.innerText = `${hVal} → ${eVal}`;
+                return;
+            }
+
+            let durationText = '';
+            const months = Math.round(diffDays / 30.4375);
+            if (months === 12) {
+                durationText = `${diffDays} ថ្ងៃ (១ ឆ្នាំពេញ)`;
+            } else if (months === 24) {
+                durationText = `${diffDays} ថ្ងៃ (២ ឆ្នាំពេញ)`;
+            } else if (months === 6) {
+                durationText = `${diffDays} ថ្ងៃ (៦ ខែ)`;
+            } else {
+                durationText = `${diffDays} ថ្ងៃ (~${months} ខែ)`;
+            }
+
+            badge.className = 'badge bg-success bg-opacity-15 text-success rounded-pill px-2.5 py-1';
+            badge.innerHTML = `<i class="fa-solid fa-hourglass-half me-1"></i>សុពលភាព៖ ${durationText}`;
+            text.innerText = 'គ្រាប់ពូជរក្សាគុណភាពបានល្អសម្រាប់ដាំដុះ';
+
+            if (display) {
+                const formatDMY = (d) => {
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const mo = String(d.getMonth() + 1).padStart(2, '0');
+                    return `${day}/${mo}/${d.getFullYear()}`;
+                };
+                display.innerHTML = `<i class="fa-regular fa-calendar me-1"></i>${formatDMY(hDate)} → ${formatDMY(eDate)}`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const hInput = document.getElementById('harvest_date');
+            const eInput = document.getElementById('expiry_date');
+            if (hInput) {
+                hInput.addEventListener('change', function() {
+                    setExpiryPreset(12);
+                    updateShelfLifePreview();
+                });
+            }
+            if (eInput) {
+                eInput.addEventListener('change', updateShelfLifePreview);
+                eInput.addEventListener('input', updateShelfLifePreview);
+            }
+            updateShelfLifePreview();
+        });
+    </script>
 @endsection

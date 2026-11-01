@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\Seed;
 use App\Models\SeedReview;
 use App\Models\SeedTraceability;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -1006,9 +1007,10 @@ class SeedController extends Controller
 
         $totalUsersCount = User::count();
         $totalCustomersCount = User::where('role', 'customer')->count();
+        $totalAdminsCount = User::where('role', 'admin')->count();
         $totalOrdersCount = Order::count();
 
-        return view('admin.customers', compact('customers', 'totalUsersCount', 'totalCustomersCount', 'totalOrdersCount'));
+        return view('admin.customers', compact('customers', 'totalUsersCount', 'totalCustomersCount', 'totalAdminsCount', 'totalOrdersCount'));
     }
 
     /**
@@ -1391,5 +1393,299 @@ class SeedController extends Controller
         $coupon->delete();
 
         return back()->with('success', 'បានលុបលេខកូដបញ្ចុះតម្លៃរួចរាល់! 🗑️');
+    }
+
+    /**
+     *  មុខងារបង្ហាញទំព័រកំណត់ទូទៅប្រព័ន្ធ និងសហគមន៍ (Admin Settings Page)
+     */
+    public function adminSettings()
+    {
+        $settings = Setting::pluck('value', 'key')->toArray();
+
+        return view('admin.settings', compact('settings'));
+    }
+
+    /**
+     *  មុខងារកែប្រែទិន្នន័យកំណត់ប្រព័ន្ធ (Admin Update Settings)
+     */
+    public function adminUpdateSettings(Request $request)
+    {
+        $keys = [
+            'cooperative_name_kh',
+            'cooperative_name_en',
+            'hotline_phone',
+            'telegram_link',
+            'contact_email',
+            'farm_address_kh',
+            'farm_address_en',
+            'low_stock_threshold',
+            'batch_expiry_warning_days',
+            'bakong_account_name',
+            'bakong_account_number',
+            'default_shipping_fee',
+        ];
+
+        foreach ($keys as $key) {
+            if ($request->has($key)) {
+                Setting::set($key, $request->input($key));
+            }
+        }
+
+        return back()->with('success', 'បានកែប្រែការកំណត់ប្រព័ន្ធ និងសហគមន៍ដោយជោគជ័យ! ⚙️');
+    }
+
+    /**
+     *  មុខងារបង្ហាញទំព័រកែសម្រួលស្តុក និងតម្លៃគ្រាប់ពូជជាដុំរហ័ស (Bulk Stock & Price Fast Editor)
+     */
+    public function adminBulkEditSeeds(Request $request)
+    {
+        $categories = Category::all();
+        $query = Seed::with('category')->orderBy('name_kh', 'asc');
+
+        if ($request->filled('category_id') && $request->category_id !== 'all') {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name_kh', 'like', "%{$search}%")
+                    ->orWhere('name_en', 'like', "%{$search}%")
+                    ->orWhere('batch_number', 'like', "%{$search}%");
+            });
+        }
+
+        $seeds = $query->get();
+
+        return view('admin.bulk_seeds', compact('seeds', 'categories'));
+    }
+
+    /**
+     *  មុខងារចាប់ទិន្នន័យកែសម្រួលស្តុក និងតម្លៃជាដុំទៅ Save ក្នុង Database (Bulk Update Seeds)
+     */
+    public function adminBulkUpdateSeeds(Request $request)
+    {
+        $request->validate([
+            'seeds' => 'required|array',
+            'seeds.*.id' => 'required|exists:seeds,id',
+            'seeds.*.stock' => 'required|integer|min:0',
+            'seeds.*.price' => 'required|numeric|min:0.01',
+        ]);
+
+        $updatedCount = 0;
+
+        DB::transaction(function () use ($request, &$updatedCount) {
+            foreach ($request->seeds as $item) {
+                $seed = Seed::find($item['id']);
+                if ($seed) {
+                    $newStock = (int) $item['stock'];
+                    $newPrice = (float) $item['price'];
+
+                    if ($seed->stock !== $newStock || (float) $seed->price !== $newPrice) {
+                        $seed->update([
+                            'stock' => $newStock,
+                            'price' => $newPrice,
+                        ]);
+                        $updatedCount++;
+                    }
+                }
+            }
+        });
+
+        return redirect('/admin/seeds')->with('success', "បានកែសម្រួលស្តុក និងតម្លៃគ្រាប់ពូជចំនួន {$updatedCount} មុខដោយជោគជ័យ! ⚡");
+    }
+
+    /**
+     *  មុខងារបង្ហាញទំព័ររបាយការណ៍ហិរញ្ញវត្ថុ និងស្ថិតិលក់កម្រិតខ្ពស់ (Admin Reports)
+     */
+    public function adminReports(Request $request)
+    {
+        $dateFilter = $request->input('date_filter', 'all_time');
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+
+        $query = Order::query();
+
+        if ($dateFilter === 'today') {
+            $query->whereDate('created_at', today());
+            $filterLabel = 'ថ្ងៃនេះ ('.today()->format('d/m/Y').')';
+        } elseif ($dateFilter === 'this_week') {
+            $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            $filterLabel = 'សប្តាហ៍នេះ ('.now()->startOfWeek()->format('d/m').' - '.now()->endOfWeek()->format('d/m/Y').')';
+        } elseif ($dateFilter === 'this_month') {
+            $query->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+            $filterLabel = 'ខែនេះ ('.now()->format('M Y').')';
+        } elseif ($dateFilter === 'last_month') {
+            $lastMonth = now()->subMonth();
+            $query->whereBetween('created_at', [$lastMonth->startOfMonth(), $lastMonth->endOfMonth()]);
+            $filterLabel = 'ខែមុន ('.$lastMonth->format('M Y').')';
+        } elseif ($dateFilter === 'this_year') {
+            $query->whereBetween('created_at', [now()->startOfYear(), now()->endOfYear()]);
+            $filterLabel = 'ឆ្នាំនេះ ('.now()->format('Y').')';
+        } elseif ($dateFilter === 'custom' && $fromDate && $toDate) {
+            $query->whereBetween('created_at', [$fromDate.' 00:00:00', $toDate.' 23:59:59']);
+            $filterLabel = "ចន្លោះពី {$fromDate} ដល់ {$toDate}";
+        } else {
+            $dateFilter = 'all_time';
+            $filterLabel = 'គ្រប់កាលបរិច្ឆេទទាំងអស់';
+        }
+
+        // Only count non-cancelled orders for financial metrics
+        $validOrdersQuery = (clone $query)->where('status', '!=', 'cancelled');
+
+        $totalRevenue = (clone $validOrdersQuery)->sum('total_price');
+        $totalDiscounts = (clone $validOrdersQuery)->sum('discount_amount');
+        $totalOrdersCount = (clone $query)->count();
+        $completedOrdersCount = (clone $query)->where('status', 'completed')->count();
+        $pendingOrdersCount = (clone $query)->where('status', 'pending')->count();
+        $cancelledOrdersCount = (clone $query)->where('status', 'cancelled')->count();
+
+        $validOrderIds = (clone $validOrdersQuery)->pluck('id');
+
+        $totalPacksSold = OrderItem::whereIn('order_id', $validOrderIds)->sum('quantity');
+        $averageOrderValue = $totalOrdersCount > 0 ? ($totalRevenue / max(1, (clone $validOrdersQuery)->count())) : 0;
+
+        // Sales by Category
+        $categorySales = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('seeds', 'order_items.seed_id', '=', 'seeds.id')
+            ->join('categories', 'seeds.category_id', '=', 'categories.id')
+            ->whereIn('orders.id', $validOrderIds)
+            ->select(
+                'categories.id',
+                'categories.name_kh',
+                'categories.name_en',
+                DB::raw('SUM(order_items.quantity) as packs_sold'),
+                DB::raw('SUM(order_items.subtotal) as total_revenue')
+            )
+            ->groupBy('categories.id', 'categories.name_kh', 'categories.name_en')
+            ->orderBy('total_revenue', 'desc')
+            ->get();
+
+        // Sales by Seed Variety
+        $seedSales = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('seeds', 'order_items.seed_id', '=', 'seeds.id')
+            ->whereIn('orders.id', $validOrderIds)
+            ->select(
+                'seeds.id',
+                'seeds.name_kh',
+                'seeds.name_en',
+                'seeds.batch_number',
+                'seeds.price',
+                'seeds.stock',
+                DB::raw('SUM(order_items.quantity) as packs_sold'),
+                DB::raw('SUM(order_items.subtotal) as total_revenue')
+            )
+            ->groupBy('seeds.id', 'seeds.name_kh', 'seeds.name_en', 'seeds.batch_number', 'seeds.price', 'seeds.stock')
+            ->orderBy('packs_sold', 'desc')
+            ->get();
+
+        return view('admin.reports', compact(
+            'totalRevenue',
+            'totalDiscounts',
+            'totalOrdersCount',
+            'completedOrdersCount',
+            'pendingOrdersCount',
+            'cancelledOrdersCount',
+            'totalPacksSold',
+            'averageOrderValue',
+            'categorySales',
+            'seedSales',
+            'dateFilter',
+            'filterLabel',
+            'fromDate',
+            'toDate'
+        ));
+    }
+
+    /**
+     *  មុខងារទាញយករបាយការណ៍លក់ជា CSV (Export Reports CSV)
+     */
+    public function adminExportReportsCsv(Request $request)
+    {
+        $dateFilter = $request->input('date_filter', 'all_time');
+        $query = Order::where('status', '!=', 'cancelled');
+
+        if ($dateFilter === 'today') {
+            $query->whereDate('created_at', today());
+        } elseif ($dateFilter === 'this_month') {
+            $query->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+        } elseif ($dateFilter === 'this_year') {
+            $query->whereBetween('created_at', [now()->startOfYear(), now()->endOfYear()]);
+        }
+
+        $orderIds = $query->pluck('id');
+
+        $seedSales = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('seeds', 'order_items.seed_id', '=', 'seeds.id')
+            ->whereIn('orders.id', $orderIds)
+            ->select(
+                'seeds.name_kh',
+                'seeds.name_en',
+                'seeds.batch_number',
+                'seeds.price',
+                'seeds.stock',
+                DB::raw('SUM(order_items.quantity) as packs_sold'),
+                DB::raw('SUM(order_items.subtotal) as total_revenue')
+            )
+            ->groupBy('seeds.name_kh', 'seeds.name_en', 'seeds.batch_number', 'seeds.price', 'seeds.stock')
+            ->orderBy('packs_sold', 'desc')
+            ->get();
+
+        $filename = 'smart_agro_sales_report_'.date('Ymd_His').'.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($seedSales) {
+            $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF"); // UTF-8 BOM
+            fputcsv($file, ['ឈ្មោះគ្រាប់ពូជ (ខ្មែរ)', 'Seed Name (EN)', 'លេខបាច់ (Batch)', 'តម្លៃលក់ ($)', 'ស្តុកនៅសល់', 'ចំនួនលក់ដាច់ (កញ្ចប់)', 'ចំណូលសរុប ($)']);
+
+            foreach ($seedSales as $item) {
+                fputcsv($file, [
+                    $item->name_kh,
+                    $item->name_en,
+                    $item->batch_number,
+                    number_format($item->price, 2),
+                    $item->stock,
+                    $item->packs_sold,
+                    number_format($item->total_revenue, 2),
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     *  មុខងារផ្លាស់ប្តូរតួនាទីអ្នកប្រើប្រាស់ (Update User Role: Admin / Customer)
+     */
+    public function updateCustomerRole(Request $request, $id)
+    {
+        $request->validate([
+            'role' => 'required|in:admin,customer',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'អ្នកមិនអាចផ្លាស់ប្តូរតួនាទីគណនីផ្ទាល់ខ្លួនរបស់អ្នកបានទេ!');
+        }
+
+        $user->role = $request->role;
+        $user->save();
+
+        $roleLabel = $request->role === 'admin' ? 'អ្នកគ្រប់គ្រង (Admin)' : 'អតិថិជនធម្មតា (Customer)';
+
+        return back()->with('success', "បានផ្លាស់ប្តូរតួនាទីរបស់ '{$user->name}' ទៅជា {$roleLabel} ដោយជោគជ័យ! 👥");
     }
 }

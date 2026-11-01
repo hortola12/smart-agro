@@ -68,4 +68,3 @@ class Coupon extends Model
         return round($discount, 2);
     }
 }
-

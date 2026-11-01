@@ -147,6 +147,8 @@ Route::middleware([AdminMiddleware::class])->group(function () {
 
     // ២. គ្រប់គ្រងទិន្នន័យគ្រាប់ពូជ (Seeds Management)
     Route::get('/admin/seeds', [SeedController::class, 'index']);
+    Route::get('/admin/seeds/bulk-update', [SeedController::class, 'adminBulkEditSeeds'])->name('admin.seeds.bulk_edit');
+    Route::post('/admin/seeds/bulk-update', [SeedController::class, 'adminBulkUpdateSeeds'])->name('admin.seeds.bulk_update');
     Route::get('/admin/seeds/create', [SeedController::class, 'create']);
     Route::post('/admin/seeds/store', [SeedController::class, 'store']);
     Route::get('/admin/seeds/edit/{id}', [SeedController::class, 'edit']);
@@ -175,6 +177,7 @@ Route::middleware([AdminMiddleware::class])->group(function () {
 
     // ៦. គ្រប់គ្រងបញ្ជីអតិថិជន (Admin Customers Management)
     Route::get('/admin/customers', [SeedController::class, 'adminCustomers']);
+    Route::post('/admin/customers/role/{id}', [SeedController::class, 'updateCustomerRole'])->name('admin.customers.update_role');
 
     // ៧. បន្ថែមស្តុកបន្ទាន់ (Quick Restock)
     Route::post('/admin/seeds/quick-restock/{id}', [SeedController::class, 'quickRestock']);
@@ -195,4 +198,12 @@ Route::middleware([AdminMiddleware::class])->group(function () {
     Route::post('/admin/coupons', [SeedController::class, 'adminStoreCoupon']);
     Route::post('/admin/coupons/{id}/toggle', [SeedController::class, 'adminToggleCoupon']);
     Route::delete('/admin/coupons/{id}', [SeedController::class, 'adminDestroyCoupon']);
+
+    // ១២. ការកំណត់ទូទៅសហគមន៍ & ប្រព័ន្ធ (Admin Settings)
+    Route::get('/admin/settings', [SeedController::class, 'adminSettings'])->name('admin.settings');
+    Route::post('/admin/settings', [SeedController::class, 'adminUpdateSettings'])->name('admin.settings.update');
+
+    // ១៣. របាយការណ៍ហិរញ្ញវត្ថុ និងស្ថិតិលក់កម្រិតខ្ពស់ (Admin Reports)
+    Route::get('/admin/reports', [SeedController::class, 'adminReports'])->name('admin.reports');
+    Route::get('/admin/reports/export', [SeedController::class, 'adminExportReportsCsv'])->name('admin.reports.export');
 });

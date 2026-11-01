@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Seed;
 use App\Models\SeedReview;
 use App\Models\SeedTraceability;
@@ -1002,5 +1003,348 @@ class SmartAgroTest extends TestCase
         $deleteResponse = $this->actingAs($admin)->delete("/admin/coupons/{$coupon->id}");
         $deleteResponse->assertSessionHas('success');
         $this->assertDatabaseMissing('coupons', ['id' => $coupon->id]);
+    }
+
+    public function test_admin_navbar_notification_bell_displays_pending_orders_and_alerts(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Bell',
+            'email' => 'admin_bell@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ស្ពៃចង្កឹះខ្វះស្តុក',
+            'name_en' => 'Bok Choy Low',
+            'price' => 1.50,
+            'stock' => 2, // Low stock <= 5
+            'batch_number' => 'BATCH-BELL-01',
+        ]);
+
+        Order::create([
+            'customer_name' => 'កសិករ សុភាព',
+            'customer_phone' => '098111222',
+            'delivery_address' => 'បាត់ដំបង',
+            'total_price' => 15.00,
+            'status' => 'pending', // Pending order
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/dashboard');
+        $response->assertStatus(200);
+        $response->assertSee('adminNotificationBtn');
+        $response->assertSee('ស្ពៃចង្កឹះខ្វះស្តុក');
+        $response->assertSee('កសិករ សុភាព');
+        $response->assertSee('ការជូនដំណឹង (Notifications)');
+    }
+
+    public function test_admin_can_view_and_update_settings(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Settings',
+            'email' => 'admin_settings@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        // 1. View settings page
+        $viewResponse = $this->actingAs($admin)->get('/admin/settings');
+        $viewResponse->assertStatus(200);
+        $viewResponse->assertSee('ការកំណត់ទូទៅសហគមន៍');
+
+        // 2. Update settings
+        $postResponse = $this->actingAs($admin)->post('/admin/settings', [
+            'cooperative_name_kh' => 'សហគមន៍កសិកម្មបាត់ដំបងថ្មី',
+            'hotline_phone' => '012999777',
+            'low_stock_threshold' => '8',
+            'default_shipping_fee' => '2.00',
+        ]);
+
+        $postResponse->assertSessionHas('success');
+        $this->assertDatabaseHas('settings', [
+            'key' => 'cooperative_name_kh',
+            'value' => 'សហគមន៍កសិកម្មបាត់ដំបងថ្មី',
+        ]);
+        $this->assertDatabaseHas('settings', [
+            'key' => 'hotline_phone',
+            'value' => '012999777',
+        ]);
+        $this->assertDatabaseHas('settings', [
+            'key' => 'low_stock_threshold',
+            'value' => '8',
+        ]);
+    }
+
+    public function test_admin_can_view_and_bulk_update_seed_stocks_and_prices(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Bulk',
+            'email' => 'admin_bulk@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែយកស្លឹក', 'name_en' => 'Leafy Veg']);
+        $seed1 = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ស្ពៃចង្កឹះបាត់ដំបង',
+            'name_en' => 'Bok Choy BTB',
+            'price' => 1.50,
+            'stock' => 10,
+            'batch_number' => 'BATCH-BULK-01',
+        ]);
+
+        $seed2 = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ស្ពៃខៀវបាត់ដំបង',
+            'name_en' => 'Green Mustard BTB',
+            'price' => 2.00,
+            'stock' => 5,
+            'batch_number' => 'BATCH-BULK-02',
+        ]);
+
+        // 1. View Bulk Edit page
+        $viewResponse = $this->actingAs($admin)->get('/admin/seeds/bulk-update');
+        $viewResponse->assertStatus(200);
+        $viewResponse->assertSee('Bulk Fast Editor');
+        $viewResponse->assertSee('ស្ពៃចង្កឹះបាត់ដំបង');
+        $viewResponse->assertSee('ស្ពៃខៀវបាត់ដំបង');
+
+        // 2. Bulk Update Stocks and Prices
+        $postResponse = $this->actingAs($admin)->post('/admin/seeds/bulk-update', [
+            'seeds' => [
+                [
+                    'id' => $seed1->id,
+                    'stock' => 35, // Updated from 10 to 35
+                    'price' => 1.75, // Updated from 1.50 to 1.75
+                ],
+                [
+                    'id' => $seed2->id,
+                    'stock' => 50, // Updated from 5 to 50
+                    'price' => 2.20, // Updated from 2.00 to 2.20
+                ],
+            ],
+        ]);
+
+        $postResponse->assertRedirect('/admin/seeds');
+        $postResponse->assertSessionHas('success');
+
+        $this->assertDatabaseHas('seeds', [
+            'id' => $seed1->id,
+            'stock' => 35,
+            'price' => 1.75,
+        ]);
+
+        $this->assertDatabaseHas('seeds', [
+            'id' => $seed2->id,
+            'stock' => 50,
+            'price' => 2.20,
+        ]);
+    }
+
+    public function test_admin_can_view_reports_and_export_csv(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Reports',
+            'email' => 'admin_reports@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែយកផ្លែ', 'name_en' => 'Fruit Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ត្រសក់ផ្អែម',
+            'name_en' => 'Sweet Cucumber',
+            'price' => 2.50,
+            'stock' => 30,
+            'batch_number' => 'BATCH-REP-01',
+        ]);
+
+        $order = Order::create([
+            'customer_name' => 'កសិករ រតនា',
+            'customer_phone' => '012555666',
+            'delivery_address' => 'បាត់ដំបង',
+            'total_price' => 12.50,
+            'status' => 'completed',
+        ]);
+
+        OrderItem::create([
+            'order_id' => $order->id,
+            'seed_id' => $seed->id,
+            'quantity' => 5,
+            'price' => 2.50,
+            'subtotal' => 12.50,
+        ]);
+
+        // 1. View reports page
+        $viewResponse = $this->actingAs($admin)->get('/admin/reports');
+        $viewResponse->assertStatus(200);
+        $viewResponse->assertSee('របាយការណ៍ហិរញ្ញវត្ថុ');
+        $viewResponse->assertSee('Product Performance Ranking');
+        $viewResponse->assertSee('ត្រសក់ផ្អែម');
+        $viewResponse->assertSee('12.50');
+
+        // 2. Export CSV
+        $exportResponse = $this->actingAs($admin)->get('/admin/reports/export');
+        $exportResponse->assertStatus(200);
+        $this->assertStringContainsString('text/csv', $exportResponse->headers->get('Content-Type'));
+    }
+
+    public function test_admin_can_promote_and_demote_user_roles(): void
+    {
+        $admin = User::create([
+            'name' => 'Super Admin',
+            'email' => 'super_admin@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $customer = User::create([
+            'name' => 'បុគ្គលិក វណ្ណា',
+            'email' => 'vanna@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'customer',
+        ]);
+
+        // 1. Promote customer to admin
+        $promoteResponse = $this->actingAs($admin)->post("/admin/customers/role/{$customer->id}", [
+            'role' => 'admin',
+        ]);
+
+        $promoteResponse->assertSessionHas('success');
+        $this->assertEquals('admin', $customer->fresh()->role);
+
+        // 2. Demote admin back to customer
+        $demoteResponse = $this->actingAs($admin)->post("/admin/customers/role/{$customer->id}", [
+            'role' => 'customer',
+        ]);
+
+        $demoteResponse->assertSessionHas('success');
+        $this->assertEquals('customer', $customer->fresh()->role);
+
+        // 3. Admin cannot change own role
+        $selfResponse = $this->actingAs($admin)->post("/admin/customers/role/{$admin->id}", [
+            'role' => 'customer',
+        ]);
+
+        $selfResponse->assertSessionHas('error');
+        $this->assertEquals('admin', $admin->fresh()->role);
+    }
+
+    public function test_admin_orders_table_renders_modern_status_pills_and_quick_view(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Status Test',
+            'email' => 'admin_status@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $order = Order::create([
+            'customer_name' => 'កសិករ សុខា',
+            'customer_phone' => '012999888',
+            'delivery_address' => 'ស្រុកបាណន់ ខេត្តបាត់ដំបង',
+            'total_price' => 45.0,
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/orders');
+        $response->assertStatus(200);
+        $response->assertSee('status-pill-trigger');
+        $response->assertSee('status-pill-pending');
+        $response->assertSee('status-dot-pulse');
+        $response->assertSee('រង់ចាំពិនិត្យ');
+        $response->assertSee('orderDetailModal'.$order->id);
+
+        // Update status to processing
+        $updateResponse = $this->actingAs($admin)->post('/admin/orders/status/'.$order->id, [
+            'status' => 'processing',
+        ]);
+        $updateResponse->assertSessionHas('success');
+        $this->assertEquals('processing', $order->fresh()->status);
+
+        // Re-visit orders page and check processing status pill
+        $revisit = $this->actingAs($admin)->get('/admin/orders');
+        $revisit->assertStatus(200);
+        $revisit->assertSee('status-pill-processing');
+        $revisit->assertSee('កំពុងរៀបចំ');
+    }
+
+    public function test_admin_create_seed_page_has_modern_date_picker_and_presets(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Date Test',
+            'email' => 'admin_date@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create([
+            'name_kh' => 'ពពួកស្ពៃ',
+            'name_en' => 'Cabbages',
+        ]);
+
+        // 1. Visit Create Seed page
+        $createResponse = $this->actingAs($admin)->get('/admin/seeds/create');
+        $createResponse->assertStatus(200);
+        $createResponse->assertSee('name="harvest_date"', false);
+        $createResponse->assertSee('name="expiry_date"', false);
+        $createResponse->assertSee('setHarvestPreset', false);
+        $createResponse->assertSee('setExpiryPreset', false);
+        $createResponse->assertSee('shelf_life_banner', false);
+
+        // 2. Submit new seed with ISO dates
+        $harvestDate = now()->toDateString();
+        $expiryDate = now()->addYear()->toDateString();
+
+        $storeResponse = $this->actingAs($admin)->post('/admin/seeds/store', [
+            'name_kh' => 'ស្ពៃក្តោបបាត់ដំបង',
+            'name_en' => 'Battambang Cabbage',
+            'category_id' => $cat->id,
+            'price' => 3.50,
+            'stock' => 50,
+            'batch_number' => 'BATCH-DATE-001',
+            'origin_kh' => 'ភូមិតាក្រាម ស្រុកបាណន់',
+            'germination_rate' => 96,
+            'harvest_date' => $harvestDate,
+            'expiry_date' => $expiryDate,
+        ]);
+
+        $storeResponse->assertRedirect('/admin/seeds');
+        $this->assertDatabaseHas('seeds', ['name_kh' => 'ស្ពៃក្តោបបាត់ដំបង']);
+        $this->assertDatabaseHas('seed_traceabilities', [
+            'batch_number' => 'BATCH-DATE-001',
+            'harvest_date' => $harvestDate,
+            'expiry_date' => $expiryDate,
+        ]);
+
+        $seed = Seed::where('batch_number', 'BATCH-DATE-001')->first();
+
+        // 3. Visit Edit Seed page and verify ISO formatted dates pre-populated
+        $editResponse = $this->actingAs($admin)->get('/admin/seeds/edit/'.$seed->id);
+        $editResponse->assertStatus(200);
+        $editResponse->assertSee('value="'.$harvestDate.'"', false);
+        $editResponse->assertSee('value="'.$expiryDate.'"', false);
+    }
+
+    public function test_admin_navbar_renders_cambodia_live_clock_and_calendar(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Clock Test',
+            'email' => 'admin_clock@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/dashboard');
+        $response->assertStatus(200);
+        $response->assertSee('cambodiaLiveClock');
+        $response->assertSee('cambodiaLiveDate');
+        $response->assertSee('adminCalendarDropdownBtn');
+        $response->assertSee('calendarDaysGrid');
+        $response->assertSee('updateCambodiaClock');
     }
 }
