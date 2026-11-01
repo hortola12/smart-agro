@@ -1,38 +1,43 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SeedController;
+use App\Http\Middleware\AdminMiddleware;
+use App\Models\Seed;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 
 /* ==========================================================================
-   🌾 FRONTEND / PUBLIC ROUTES (អ្នកណាក៏អាចចូលមើលបាន - មិនបាច់ Login)
+    FRONTEND / PUBLIC ROUTES (អ្នកណាក៏អាចចូលមើលបាន - មិនបាច់ Login)
    ========================================================================== */
 
 // ១. ទំព័រដើមគេហទំព័រ Frontend (Homepage)
 Route::get('/', function () {
-    // 🟢 Eager Load 'traceability' ចូលទៅជាមួយ ដើម្បីឱ្យ Progress Bar ទំព័រដើមបង្ហាញអត្រាលូតលាស់ពិតប្រាកដចេញពី DB
-    $seeds = \App\Models\Seed::with(['category', 'traceability'])->get();
+    //  Eager Load 'traceability' ចូលទៅជាមួយ ដើម្បីឱ្យ Progress Bar ទំព័រដើមបង្ហាញអត្រាលូតលាស់ពិតប្រាកដចេញពី DB
+    $seeds = Seed::with(['category', 'traceability'])->get();
+
     return view('home', compact('seeds'));
 });
 
 // ២. ទំព័រព័ត៌មានលម្អិតគ្រាប់ពូជ
 Route::get('/seed-detail/{id}', [SeedController::class, 'seedDetail']);
 
-// 🟢 កែសម្រួល៖ ប្តូរឱ្យទៅជា /change-language/ ឱ្យត្រូវគ្នា ១០០% ជាមួយប៊ូតុងប្តូរភាសា KH/EN លើរបារ Navbar
+//  កែសម្រួល៖ ប្តូរឱ្យទៅជា /change-language/ ឱ្យត្រូវគ្នា ១០០% ជាមួយប៊ូតុងប្តូរភាសា KH/EN លើរបារ Navbar
 Route::get('/change-language/{locale}', [SeedController::class, 'changeLanguage']);
 
-// 🔍 ផ្លូវសម្រាប់ស្វែងរកឈ្មោះគ្រាប់ពូជទូទៅ (Search Vegetable Seeds)
+//  ផ្លូវសម្រាប់ស្វែងរកឈ្មោះគ្រាប់ពូជទូទៅ (Search Vegetable Seeds)
 Route::get('/search', [SeedController::class, 'searchSeeds']);
 
-// 🟢 ដោះស្រាយបញ្ហា 404៖ ប្តូរពី /trace មកជា /trace-batch ឱ្យត្រូវចំ Form ស្វែងរកលេខបាច់របស់កសិករ លែងលោត Error ទៀតហើយ!
+// ផ្លូវសម្រាប់តាមដានលេខបាច់ (QR Code / Direct URL)
+Route::get('/trace', [SeedController::class, 'traceBatch']);
 Route::get('/trace-batch', [SeedController::class, 'traceBatch']);
 
 // ៣. ទំព័រ Form សម្រាប់ឱ្យកសិករវាយបញ្ចូលលេខ Batch ស្វែងរក
-Route::get('/traceability', function() {
+Route::get('/traceability', function () {
     return view('traceability_search');
 });
-
 
 /* ==========================================================================
    🛒 PUBLIC CART SESSION ROUTES (ប្រព័ន្ធកន្ត្រកទំនិញទូទៅ)
@@ -42,9 +47,8 @@ Route::post('/add-to-cart/{id}', [SeedController::class, 'addToCart']);
 Route::patch('/update-cart', [SeedController::class, 'updateCart']);
 Route::delete('/remove-from-cart', [SeedController::class, 'removeFromCart']);
 
-
 /* ==========================================================================
-   🔐 CUSTOM AUTHENTICATION ROUTES (ប្រព័ន្ធ Login / Register / Logout)
+    CUSTOM AUTHENTICATION ROUTES (ប្រព័ន្ធ Login / Register / Logout)
    ========================================================================== */
 
 // ១. ទំព័រចូលប្រើប្រាស់ (Login)
@@ -60,6 +64,7 @@ Route::post('/login', function (Request $request) {
 
     if (Auth::attempt($credentials, $request->has('remember'))) {
         $request->session()->regenerate();
+
         return Auth::user()->role === 'admin' ? redirect()->intended('/admin/dashboard') : redirect()->intended('/');
     }
 
@@ -78,14 +83,15 @@ Route::post('/register', function (Request $request) {
         'password' => ['required', 'string', 'min:8', 'confirmed'],
     ]);
 
-    $user = \App\Models\User::create([
+    $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
-        'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+        'password' => Hash::make($request->password),
         'role' => 'customer',
     ]);
 
     Auth::login($user);
+
     return redirect('/');
 });
 
@@ -94,18 +100,18 @@ Route::post('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
+
     return redirect('/');
 })->name('logout');
-
 
 /* ==========================================================================
    🛒 PROTECTED USER ROUTES (លុះត្រាតែ Login រួចរាល់ទើបអាចចូលបញ្ជាទិញបាន)
    ========================================================================== */
-// 🟢 សម្អាតរួចរាល់៖ ប្រមូលផ្តុំកូដដែលស្ទួនគ្នាបញ្ចូលគ្នាតែមួយ និងតម្រង់មុខងាររត់ទៅកាន់ SeedController ឱ្យស្របតាមកូដស្នូល
+
 Route::middleware(['auth'])->group(function () {
 
     // ផ្លូវបើកទំព័រត្រួតពិនិត្យវិក្កយបត្រជំហានចុងក្រោយ (GET)
-    Route::get('/checkout', function() {
+    Route::get('/checkout', function () {
         return view('checkout');
     })->name('checkout');
 
@@ -116,11 +122,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/my-orders', [SeedController::class, 'myOrders'])->name('my.orders');
 });
 
-
 /* ==========================================================================
-   🛡️ PROTECTED ADMIN ROUTES (ផ្ទាំងគ្រប់គ្រងខាងក្រោយ ស្ថិតក្រោមច្បាប់ការពាររបស់ AdminMiddleware)
+    PROTECTED ADMIN ROUTES (AdminMiddleware)
    ========================================================================== */
-Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
+Route::middleware([AdminMiddleware::class])->group(function () {
 
     // ១. ទំព័រផ្ទាំងគ្រប់គ្រងទូទៅគណនាស្ថិតិ Dynamic (Dashboard)
     Route::get('/admin/dashboard', [SeedController::class, 'adminDashboard']);

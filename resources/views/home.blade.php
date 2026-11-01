@@ -42,7 +42,7 @@
                         <span class="input-group-text bg-white border-0 text-success ps-3">
                             <i class="fa-solid fa-qrcode"></i>
                         </span>
-                        <input type="text" name="search" class="form-control border-0 bg-white search-input" placeholder="វាយលេខ Batch តាមដាន... (ឧ. BATCH-2026-LT03)" required>
+                        <input type="text" name="search" class="form-control border-0 bg-white search-input" placeholder="វាយលេខ Batch តាមដាន... (ឧ. BATCH-2026-LT01)" required>
                         <button class="btn btn-success px-3 fw-bold rounded-pill d-flex align-items-center search-btn" type="submit" style="font-size: 14px;">
                             <i class="fa-solid fa-magnifying-glass me-1"></i> តាមដាន
                         </button>
@@ -173,8 +173,7 @@
 
                 <div class="mb-3">
                     @php
-                        // 🟢 កែសម្រួល៖ ប្តូរមកចាប់យកតាមរយៈ Relationship One-to-One 'traceability' វិញ
-                        // ដើម្បីឱ្យបង្ហាញតម្លៃអត្រាលូតលាស់ពិតប្រាកដចេញពី Database (ដូចជា ៩៥% ឬ ៩៨%) លែងជាប់គាំងត្រឹម ៩០% គ្រប់ផលិតផល
+
                         $rate = $seed->traceability ? $seed->traceability->germination_rate : 90.00;
                     @endphp
 

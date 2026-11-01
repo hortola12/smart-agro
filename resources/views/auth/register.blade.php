@@ -24,7 +24,7 @@
 
             <div class="input-block-custom">
                 <label for="name">ឈ្មោះពេញ (Full Name)</label>
-                <input id="name" type="text" class="field-control-custom @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus placeholder="ឧ. ភារម្យ តូឡា">
+                <input id="name" type="text" class="field-control-custom @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus placeholder="ឧ. ហោ តុលា">
                 @error('name')
                     <span class="invalid-feedback fw-bold mt-1" role="alert"><strong>{{ $message }}</strong></span>
                 @enderror
@@ -32,7 +32,7 @@
 
             <div class="input-block-custom">
                 <label for="email">អ៊ីមែល (Email Address)</label>
-                <input id="email" type="email" class="field-control-custom @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="example@gmail.com">
+                <input id="email" type="email" class="field-control-custom @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="info@gmail.com">
                 @error('email')
                     <span class="invalid-feedback fw-bold mt-1" role="alert"><strong>{{ $message }}</strong></span>
                 @enderror

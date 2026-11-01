@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
     /**
-     * 🛒 មុខងារបង្ហាញទំព័រ Checkout
+     *  មុខងារបង្ហាញទំព័រ Checkout
      */
     public function checkout()
     {
@@ -31,7 +31,7 @@ class CartController extends Controller
     }
 
     /**
-     * 📦 បង្ហាញប្រវត្តិបញ្ជាទិញរបស់អតិថិជនម្នាក់ៗ (Customer Order History)
+     *  បង្ហាញប្រវត្តិបញ្ជាទិញរបស់អតិថិជនម្នាក់ៗ (Customer Order History)
      */
     public function myOrders()
     {
@@ -45,7 +45,7 @@ class CartController extends Controller
     }
 
     /**
-     * 💾 ទទួលទិន្នន័យពី Form កន្ត្រកទំនិញ រួចបង្កើតវិក្កយបត្រចូល Database
+     *  ទទួលទិន្នន័យពី Form កន្ត្រកទំនិញ រួចបង្កើតវិក្កយបត្រចូល Database
      */
     public function confirmOrder(Request $request)
     {
