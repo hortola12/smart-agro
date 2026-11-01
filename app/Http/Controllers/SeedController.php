@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Seed;
+use App\Models\SeedReview;
 use App\Models\SeedTraceability;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -616,7 +617,7 @@ class SeedController extends Controller
      */
     public function seedDetail($id)
     {
-        $seed = Seed::with(['category', 'traceability'])->findOrFail($id);
+        $seed = Seed::with(['category', 'traceability', 'reviews.user'])->findOrFail($id);
 
         return view('detail', compact('seed'));
     }
@@ -1063,5 +1064,73 @@ class SeedController extends Controller
         }
 
         return view('admin.packing_manifest', compact('orders', 'seedSummary', 'totalPacks', 'totalRevenueToCollect', 'status'));
+    }
+
+    /**
+     *  មុខងារសម្រាប់អតិថិជនដាក់មតិយោបល់ និងវាយតម្លៃផ្កាយ (Store Review & Rating)
+     */
+    public function storeReview(Request $request, $id)
+    {
+        $request->validate([
+            'customer_name' => 'required|string|max:100',
+            'customer_phone' => 'nullable|string|max:20',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|max:1000',
+        ]);
+
+        $seed = Seed::findOrFail($id);
+
+        SeedReview::create([
+            'seed_id' => $seed->id,
+            'user_id' => Auth::id(),
+            'customer_name' => $request->customer_name,
+            'customer_phone' => $request->customer_phone,
+            'rating' => (int) $request->rating,
+            'comment' => $request->comment,
+            'is_approved' => true,
+        ]);
+
+        return back()->with('review_success', 'សូមអរគុណសម្រាប់ការវាយតម្លៃ! មតិយោបល់របស់អ្នកត្រូវបានកត់ត្រាជោគជ័យ។ ⭐');
+    }
+
+    /**
+     *  មុខងារគ្រប់គ្រងមតិយោបល់ និងការវាយតម្លៃសម្រាប់ Admin (Admin Reviews Index)
+     */
+    public function adminReviews(Request $request)
+    {
+        $query = SeedReview::with('seed')->latest();
+
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('customer_name', 'like', "%{$search}%")
+                    ->orWhere('comment', 'like', "%{$search}%")
+                    ->orWhereHas('seed', function ($sq) use ($search) {
+                        $sq->where('name_kh', 'like', "%{$search}%")
+                            ->orWhere('name_en', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $reviews = $query->paginate(15);
+        $totalReviews = SeedReview::count();
+        $avgRating = SeedReview::avg('rating') ? round(SeedReview::avg('rating'), 1) : 5.0;
+
+        return view('admin.reviews', compact('reviews', 'totalReviews', 'avgRating'));
+    }
+
+    /**
+     *  មុខងារលុបមតិយោបល់មិនសមរម្យចេញពីប្រព័ន្ធ (Admin Delete Review)
+     */
+    public function destroyReview($id)
+    {
+        $review = SeedReview::findOrFail($id);
+        $review->delete();
+
+        return back()->with('success', 'បានលុបមតិយោបល់អតិថិជនដោយជោគជ័យ! 🗑️');
     }
 }

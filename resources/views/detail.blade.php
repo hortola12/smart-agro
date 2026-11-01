@@ -31,7 +31,27 @@
                 {{ App::isLocale('en') ? ($seed->category?->name_en ?? 'Seed') : ($seed->category?->name_kh ?? 'គ្រាប់ពូជ') }}
             </span>
 
-            <h2 class="fw-bold mb-2 text-dark" style="font-family: 'Kantumruy Pro', sans-serif;">{{ App::isLocale('en') ? $seed->name_en : $seed->name_kh }}</h2>
+            <h2 class="fw-bold mb-1 text-dark" style="font-family: 'Kantumruy Pro', sans-serif;">{{ App::isLocale('en') ? $seed->name_en : $seed->name_kh }}</h2>
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="text-warning small">
+                    @php $avgRating = $seed->averageRating(); @endphp
+                    @for($i = 1; $i <= 5; $i++)
+                        @if($i <= floor($avgRating))
+                            <i class="fa-solid fa-star"></i>
+                        @elseif($i - $avgRating <= 0.5)
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                        @else
+                            <i class="fa-regular fa-star text-muted opacity-50"></i>
+                        @endif
+                    @endfor
+                </div>
+                <span class="fw-bold text-dark font-monospace">{{ number_format($avgRating, 1) }}</span>
+                <span class="text-muted small">·</span>
+                <a href="#reviews-section" class="text-success small fw-bold text-decoration-none">
+                    {{ $seed->reviews->count() }} {{ __('មតិវាយតម្លៃ') }}
+                </a>
+            </div>
 
             <h3 class="price-tag fs-2 mb-4 fw-bold text-success">
                 ${{ number_format($seed->price, 2) }}
@@ -191,5 +211,165 @@
         </div>
     </div>
     @endif
+
+    <!-- ⭐ ផ្នែកវាយតម្លៃ និងមតិយោបល់របស់កសិករ (Customer Reviews & Ratings) -->
+    <div class="row mt-4" id="reviews-section">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <div>
+                        <h4 class="fw-bold text-dark mb-1 d-flex align-items-center" style="font-family: 'Kantumruy Pro', sans-serif;">
+                            <i class="fa-solid fa-star text-warning me-2"></i>ការវាយតម្លៃ និងមតិយោបល់កសិករ (Reviews & Ratings)
+                        </h4>
+                        <p class="text-muted small mb-0">ការចែករំលែកបទពិសោធន៍ផ្ទាល់ពីកសិករដែលបានដាំដុះគ្រាប់ពូជនេះជាក់ស្តែង</p>
+                    </div>
+                    <button class="btn btn-outline-success fw-bold rounded-pill px-4" type="button" data-bs-toggle="collapse" data-bs-target="#writeReviewCollapse" aria-expanded="false">
+                        <i class="fa-solid fa-pen me-2"></i>សរសេរការវាយតម្លៃ
+                    </button>
+                </div>
+
+                @if(session('review_success'))
+                    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+                        <i class="fa-solid fa-circle-check me-2 fs-5 align-middle"></i>{{ session('review_success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+                        <ul class="mb-0 small">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                <!-- 📝 REVIEW FORM (COLLAPSIBLE / EXPANDED) -->
+                <div class="collapse {{ ($errors->any() || session('review_success')) ? 'show' : '' }} mb-4" id="writeReviewCollapse">
+                    <div class="card card-body bg-light rounded-4 border-0 p-4 shadow-sm">
+                        <h6 class="fw-bold text-dark mb-3">
+                            <i class="fa-solid fa-star-half-stroke text-warning me-1.5"></i>ចែករំលែកមតិរបស់អ្នកលើគ្រាប់ពូជនេះ
+                        </h6>
+                        <form action="{{ route('seed.review.store', $seed->id) }}" method="POST">
+                            @csrf
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">ឈ្មោះរបស់អ្នក <span class="text-danger">*</span></label>
+                                    <input type="text" name="customer_name" class="form-control rounded-3" placeholder="ឧ. កសិករ សុខ ហេង" value="{{ old('customer_name', auth()->user()?->name) }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">លេខទូរស័ព្ទ (ជាជម្រើស)</label>
+                                    <input type="text" name="customer_phone" class="form-control rounded-3" placeholder="ឧ. 012 345 678" value="{{ old('customer_phone') }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted d-block">កម្រិតផ្កាយវាយតម្លៃ (Star Rating) <span class="text-danger">*</span></label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach([5 => '⭐⭐⭐⭐⭐ (៥ ផ្កាយ - ល្អឥតខ្ចោះ)', 4 => '⭐⭐⭐⭐ (៤ ផ្កាយ - ល្អណាស់)', 3 => '⭐⭐⭐ (៣ ផ្កាយ - មធ្យម)', 2 => '⭐⭐ (២ ផ្កាយ - ខ្សោយ)', 1 => '⭐ (១ ផ្កាយ - មិនពេញចិត្ត)'] as $val => $label)
+                                            <div class="form-check form-check-inline border bg-white rounded-pill px-3 py-1.5 m-0 shadow-xs">
+                                                <input class="form-check-input" type="radio" name="rating" id="rating_{{ $val }}" value="{{ $val }}" {{ old('rating', '5') == $val ? 'checked' : '' }} required>
+                                                <label class="form-check-label small fw-bold text-dark cursor-pointer" for="rating_{{ $val }}">
+                                                    {{ $label }}
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted">មតិយោបល់ និងបទពិសោធន៍ដាំដុះ (Comment) <span class="text-danger">*</span></label>
+                                    <textarea name="comment" rows="3" class="form-control rounded-3" placeholder="រៀបរាប់ពីអត្រាដុះ កម្លាំងលូតលាស់ រសជាតិ ឬទិន្នផលដែលទទួលបាន..." required>{{ old('comment') }}</textarea>
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="button" class="btn btn-light rounded-pill px-4 me-2 fw-bold" data-bs-toggle="collapse" data-bs-target="#writeReviewCollapse">
+                                        បោះបង់
+                                    </button>
+                                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                                        <i class="fa-solid fa-paper-plane me-1.5"></i>បញ្ជូនការវាយតម្លៃ
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 📊 RATING OVERVIEW -->
+                <div class="row g-4 align-items-center mb-4 p-4 rounded-4 bg-light border">
+                    <div class="col-md-4 text-center border-end">
+                        <div class="display-4 fw-bold text-dark font-monospace">{{ number_format($seed->averageRating(), 1) }}</div>
+                        <div class="text-warning fs-5 my-1">
+                            @php $avg = $seed->averageRating(); @endphp
+                            @for($i = 1; $i <= 5; $i++)
+                                @if($i <= floor($avg))
+                                    <i class="fa-solid fa-star"></i>
+                                @elseif($i - $avg <= 0.5)
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                @else
+                                    <i class="fa-regular fa-star text-muted opacity-50"></i>
+                                @endif
+                            @endfor
+                        </div>
+                        <div class="text-muted small">សរុប <strong>{{ $seed->reviews->count() }}</strong> ការវាយតម្លៃ</div>
+                    </div>
+                    <div class="col-md-8">
+                        @php
+                            $totalRev = $seed->reviews->count();
+                        @endphp
+                        @foreach([5, 4, 3, 2, 1] as $star)
+                            @php
+                                $starCount = $seed->reviews->where('rating', $star)->count();
+                                $pct = $totalRev > 0 ? round(($starCount / $totalRev) * 100) : ($star == 5 ? 100 : 0);
+                            @endphp
+                            <div class="d-flex align-items-center gap-2 mb-1.5">
+                                <span class="small fw-bold text-muted font-monospace" style="width: 45px;">{{ $star }} <i class="fa-solid fa-star text-warning"></i></span>
+                                <div class="progress flex-grow-1" style="height: 8px;">
+                                    <div class="progress-bar bg-warning rounded" role="progressbar" style="width: {{ $pct }}%;" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <span class="small text-muted font-monospace text-end" style="width: 40px;">{{ $starCount }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- 💬 REVIEWS LIST -->
+                <div class="reviews-list">
+                    @forelse($seed->reviews as $rev)
+                        <div class="p-3 mb-3 border rounded-3 bg-white shadow-xs">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-success bg-opacity-10 text-success fw-bold d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 15px;">
+                                        {{ mb_substr($rev->customer_name, 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">{{ $rev->customer_name }}</div>
+                                        <small class="text-success" style="font-size: 11px;">
+                                            <i class="fa-solid fa-circle-check me-1"></i>កសិករបានទិញពិតប្រាកដ
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="text-warning small">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <i class="fa-solid fa-star {{ $i <= $rev->rating ? '' : 'text-muted opacity-25' }}"></i>
+                                        @endfor
+                                    </div>
+                                    <small class="text-muted font-monospace" style="font-size: 11px;">{{ $rev->created_at->diffForHumans() }}</small>
+                                </div>
+                            </div>
+                            <p class="text-secondary small mb-0 ps-5" style="line-height: 1.6;">
+                                {{ $rev->comment }}
+                            </p>
+                        </div>
+                    @empty
+                        <div class="text-center py-4 text-muted bg-light rounded-3">
+                            <i class="fa-regular fa-comment-dots fs-1 text-muted opacity-50 mb-2"></i>
+                            <p class="mb-1 fw-bold">មិនទាន់មានការវាយតម្លៃនៅឡើយទេ</p>
+                            <small>សូមធ្វើជាកសិករដំបូងគេដែលចែករំលែកបទពិសោធន៍ដាំដុះគ្រាប់ពូជនេះ!</small>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

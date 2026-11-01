@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Seed;
+use App\Models\SeedReview;
 use App\Models\SeedTraceability;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -641,5 +642,110 @@ class SmartAgroTest extends TestCase
         $response->assertSee('ការជូនដំណឹង៖ គ្រាប់ពូជដែលជិតផុតកំណត់');
         $response->assertSee('ប៉េងប៉ោះជិតផុតកំណត់');
         $response->assertSee('BATCH-EXP-01');
+    }
+
+    public function test_customer_can_submit_review_for_seed(): void
+    {
+        $cat = Category::create(['name_kh' => 'បន្លែយកផ្លែ', 'name_en' => 'Fruit Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ពូជត្រសក់ស្រូវ',
+            'name_en' => 'Melon Seed',
+            'price' => 3.50,
+            'stock' => 30,
+            'batch_number' => 'BATCH-REV-01',
+        ]);
+
+        $response = $this->post("/seed-detail/{$seed->id}/review", [
+            'customer_name' => 'សុខ វិសាល',
+            'customer_phone' => '012999888',
+            'rating' => 5,
+            'comment' => 'គ្រាប់ពូជនេះដុះលឿនណាស់ ផ្លែធំផ្អែមឆ្ងាញ់!',
+        ]);
+
+        $response->assertSessionHas('review_success');
+        $this->assertDatabaseHas('seed_reviews', [
+            'seed_id' => $seed->id,
+            'customer_name' => 'សុខ វិសាល',
+            'rating' => 5,
+            'comment' => 'គ្រាប់ពូជនេះដុះលឿនណាស់ ផ្លែធំផ្អែមឆ្ងាញ់!',
+        ]);
+    }
+
+    public function test_seed_detail_displays_reviews_and_average_rating(): void
+    {
+        $cat = Category::create(['name_kh' => 'បន្លែយកផ្លែ', 'name_en' => 'Fruit Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ពូជឪឡឹក',
+            'name_en' => 'Watermelon Seed',
+            'price' => 4.00,
+            'stock' => 20,
+            'batch_number' => 'BATCH-WATER-01',
+        ]);
+
+        SeedReview::create([
+            'seed_id' => $seed->id,
+            'customer_name' => 'កសិករ មករា',
+            'rating' => 5,
+            'comment' => 'ផ្លែធំ ទម្ងន់ធ្ងន់ល្អណាស់',
+            'is_approved' => true,
+        ]);
+
+        SeedReview::create([
+            'seed_id' => $seed->id,
+            'customer_name' => 'កសិករ ចាន់ណា',
+            'rating' => 4,
+            'comment' => 'អត្រាដុះ ៩៨% ពេញចិត្តខ្លាំង',
+            'is_approved' => true,
+        ]);
+
+        $response = $this->get("/seed-detail/{$seed->id}");
+        $response->assertStatus(200);
+        $response->assertSee('4.5'); // Average (5 + 4) / 2 = 4.5
+        $response->assertSee('កសិករ មករា');
+        $response->assertSee('កសិករ ចាន់ណា');
+        $response->assertSee('អត្រាដុះ ៩៨% ពេញចិត្តខ្លាំង');
+    }
+
+    public function test_admin_can_view_and_delete_reviews(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Reviews',
+            'email' => 'admin_reviews@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែយកស្លឹក', 'name_en' => 'Leafy Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ស្ពៃក្តោប',
+            'name_en' => 'Cabbage',
+            'price' => 2.00,
+            'stock' => 15,
+            'batch_number' => 'BATCH-CAB-01',
+        ]);
+
+        $review = SeedReview::create([
+            'seed_id' => $seed->id,
+            'customer_name' => 'Spam User',
+            'rating' => 1,
+            'comment' => 'Inappropriate comment content',
+            'is_approved' => true,
+        ]);
+
+        // View reviews in admin panel
+        $response = $this->actingAs($admin)->get('/admin/reviews');
+        $response->assertStatus(200);
+        $response->assertSee('Inappropriate comment content');
+        $response->assertSee('Spam User');
+
+        // Delete review
+        $deleteResponse = $this->actingAs($admin)->delete("/admin/reviews/delete/{$review->id}");
+        $deleteResponse->assertSessionHas('success');
+        $this->assertDatabaseMissing('seed_reviews', [
+            'id' => $review->id,
+        ]);
     }
 }

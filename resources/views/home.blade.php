@@ -304,9 +304,21 @@
                     <h6 class="card-title fw-bold mb-1 text-dark text-truncate" title="{{ $seed->name_kh }}" style="font-family: 'Kantumruy Pro', sans-serif;">
                         {{ App::isLocale('en') ? $seed->name_en : $seed->name_kh }}
                     </h6>
-                    <small class="text-muted mb-2 d-block text-truncate" style="font-size: 11.5px;">
+                    <small class="text-muted mb-1 d-block text-truncate" style="font-size: 11.5px;">
                         {{ App::isLocale('en') ? $seed->name_kh : $seed->name_en }}
                     </small>
+
+                    <!-- Star Rating Display -->
+                    <div class="d-flex align-items-center gap-1 mb-2">
+                        <div class="text-warning" style="font-size: 11px;">
+                            @php $seedAvg = $seed->averageRating(); @endphp
+                            @for($i = 1; $i <= 5; $i++)
+                                <i class="fa-solid fa-star {{ $i <= floor($seedAvg) ? '' : 'text-muted opacity-25' }}"></i>
+                            @endfor
+                        </div>
+                        <span class="fw-bold text-dark font-monospace" style="font-size: 11px;">{{ number_format($seedAvg, 1) }}</span>
+                        <span class="text-muted" style="font-size: 10px;">({{ $seed->reviews->count() }})</span>
+                    </div>
 
                     <!-- Price -->
                     <div class="mb-2">

@@ -43,4 +43,22 @@ class Seed extends Model
     {
         return $this->hasOne(SeedTraceability::class, 'seed_id');
     }
+
+    /**
+     * 🔗 ទំនាក់ទំនងទៅកាន់មតិយោបល់ និងការវាយតម្លៃ (One-to-Many Reviews)
+     */
+    public function reviews()
+    {
+        return $this->hasMany(SeedReview::class)->where('is_approved', true)->latest();
+    }
+
+    /**
+     * គណនាពិន្ទុផ្កាយមធ្យម (Average Star Rating 1-5)
+     */
+    public function averageRating()
+    {
+        $avg = $this->reviews()->avg('rating');
+
+        return $avg ? round($avg, 1) : 5.0;
+    }
 }

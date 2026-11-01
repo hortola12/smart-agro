@@ -18,13 +18,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     // Eager Load 'traceability' និងរាប់ចំនួនគ្រាប់ពូជក្នុងប្រភេទនីមួយៗ (withCount)
     $categories = Category::withCount('seeds')->get();
-    $seeds = Seed::with(['category', 'traceability'])->get();
+    $seeds = Seed::with(['category', 'traceability', 'reviews'])->get();
 
     return view('home', compact('seeds', 'categories'));
 });
 
 // ២. ទំព័រព័ត៌មានលម្អិតគ្រាប់ពូជ
 Route::get('/seed-detail/{id}', [SeedController::class, 'seedDetail']);
+Route::post('/seed-detail/{id}/review', [SeedController::class, 'storeReview'])->name('seed.review.store');
 Route::get('/seed-certificate/{id}', [SeedController::class, 'seedCertificate'])->name('seed.certificate');
 
 //  កែសម្រួល៖ ប្តូរឱ្យទៅជា /change-language/ ឱ្យត្រូវគ្នា ១០០% ជាមួយប៊ូតុងប្តូរភាសា KH/EN លើរបារ Navbar
@@ -176,4 +177,8 @@ Route::middleware([AdminMiddleware::class])->group(function () {
 
     // ៩. បោះពុម្ពស្លាក Sticker គ្រាប់ពូជជាសន្លឹក (Print Packaging Labels)
     Route::get('/admin/seeds/print-labels/{id}', [SeedController::class, 'printLabels']);
+
+    // ១០. គ្រប់គ្រងមតិយោបល់ និងការវាយតម្លៃរបស់អតិថិជន (Admin Reviews Management)
+    Route::get('/admin/reviews', [SeedController::class, 'adminReviews']);
+    Route::delete('/admin/reviews/delete/{id}', [SeedController::class, 'destroyReview']);
 });
