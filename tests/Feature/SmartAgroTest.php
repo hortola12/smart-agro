@@ -460,6 +460,36 @@ class SmartAgroTest extends TestCase
         $response->assertSee('សន្លឹកបោះពុម្ពស្លាក QR');
     }
 
+    public function test_seed_certificate_view_loads_successfully_with_lab_parameters(): void
+    {
+        $cat = Category::create(['name_kh' => 'បន្លែយកស្លឹក', 'name_en' => 'Leafy']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'សាឡាត់តាក្រាម',
+            'name_en' => 'Battambang Lettuce',
+            'price' => 2.5,
+            'stock' => 100,
+            'batch_number' => 'BATCH-CERT-99',
+        ]);
+
+        SeedTraceability::create([
+            'seed_id' => $seed->id,
+            'batch_number' => 'BATCH-CERT-99',
+            'origin_kh' => 'កសិដ្ឋានតាក្រាម',
+            'origin_en' => 'Takram Farm',
+            'germination_rate' => 97.5,
+            'harvest_date' => '2026-05-10',
+            'expiry_date' => '2027-05-10',
+        ]);
+
+        $response = $this->get('/seed-certificate/'.$seed->id);
+        $response->assertStatus(200);
+        $response->assertSee('វិញ្ញាបនបត្រត្រួតពិនិត្យគុណភាពគ្រាប់ពូជ');
+        $response->assertSee('សាឡាត់តាក្រាម');
+        $response->assertSee('BATCH-CERT-99');
+        $response->assertSee('97.5%');
+    }
+
     public function test_public_order_tracking_finds_order_by_phone_and_order_id(): void
     {
         $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
@@ -533,5 +563,83 @@ class SmartAgroTest extends TestCase
         $response->assertSee('ការកម្ម៉ង់សរុប');
         $response->assertSee('ចំណូលសរុប');
         $response->assertSee('Customer Today');
+    }
+
+    public function test_admin_can_view_daily_packing_manifest(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Manifest',
+            'email' => 'admin_manifest@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ស្ពៃចង្កឹះ',
+            'name_en' => 'Choy Sum',
+            'price' => 2.0,
+            'stock' => 50,
+            'batch_number' => 'BATCH-MAN-01',
+        ]);
+
+        $order = Order::create([
+            'customer_name' => 'លោក ហេង',
+            'customer_phone' => '077889900',
+            'delivery_address' => 'Battambang',
+            'total_price' => 10.0,
+            'status' => 'pending',
+        ]);
+
+        $order->items()->create([
+            'seed_id' => $seed->id,
+            'quantity' => 5,
+            'price' => 2.0,
+            'subtotal' => 10.0,
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/orders/packing-manifest');
+        $response->assertStatus(200);
+        $response->assertSee('បញ្ជីរៀបចំទំនិញ និងចាត់ចែងដឹកជញ្ជូនប្រចាំថ្ងៃ');
+        $response->assertSee('ស្ពៃចង្កឹះ');
+        $response->assertSee('5 កញ្ចប់');
+        $response->assertSee('លោក ហេង');
+    }
+
+    public function test_admin_dashboard_displays_expiring_batches_alert(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Expire',
+            'email' => 'admin_expire@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ប៉េងប៉ោះជិតផុតកំណត់',
+            'name_en' => 'Expiring Tomato',
+            'price' => 3.0,
+            'stock' => 20,
+            'batch_number' => 'BATCH-EXP-01',
+        ]);
+
+        SeedTraceability::create([
+            'seed_id' => $seed->id,
+            'batch_number' => 'BATCH-EXP-01',
+            'origin_kh' => 'បាត់ដំបង',
+            'origin_en' => 'Battambang',
+            'germination_rate' => 95,
+            'harvest_date' => now()->subMonths(6)->toDateString(),
+            'expiry_date' => now()->addDays(20)->toDateString(), // Expiring in 20 days!
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/dashboard');
+        $response->assertStatus(200);
+        $response->assertSee('ការជូនដំណឹង៖ គ្រាប់ពូជដែលជិតផុតកំណត់');
+        $response->assertSee('ប៉េងប៉ោះជិតផុតកំណត់');
+        $response->assertSee('BATCH-EXP-01');
     }
 }

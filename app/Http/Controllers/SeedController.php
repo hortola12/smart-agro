@@ -622,6 +622,16 @@ class SeedController extends Controller
     }
 
     /**
+     *  បន្ថែមថ្មី៖ មុខងារចេញវិញ្ញាបនបត្រគុណភាព និងអត្រាដំណុះផ្លូវការ (Official Seed Quality Certificate A4)
+     */
+    public function seedCertificate($id)
+    {
+        $seed = Seed::with(['category', 'traceability'])->findOrFail($id);
+
+        return view('seed_certificate', compact('seed'));
+    }
+
+    /**
      * ២៤. មុខងារសម្រាប់បង្ហាញទំព័រ Dashboard និងគណនាទិន្នន័យស្ថិតិ Dynamic
      */
     public function adminDashboard()
@@ -642,6 +652,14 @@ class SeedController extends Controller
 
         // គ្រាប់ពូជដែលជិតអស់ពីស្តុក សម្រាប់បង្ហាញផ្ទាំង Alert & Restock លើ Dashboard
         $low_stock_seeds = Seed::with('category')->where('stock', '<=', 5)->orderBy('stock', 'asc')->get();
+
+        // វគ្គផលិតគ្រាប់ពូជដែលជិតផុតកំណត់ក្នុងរយៈពេល ៦០ ថ្ងៃ (Expiring Batches)
+        $expiringBatches = SeedTraceability::with('seed')
+            ->whereNotNull('expiry_date')
+            ->where('expiry_date', '<=', now()->addDays(60))
+            ->orderBy('expiry_date', 'asc')
+            ->get();
+        $expiringBatchesCount = $expiringBatches->count();
 
         // ស្ថិតិចំណូល ៦ ខែចុងក្រោយសម្រាប់គូរ Visual Chart
         $monthlySales = [];
@@ -670,6 +688,8 @@ class SeedController extends Controller
             'recent_orders',
             'bestSellers',
             'low_stock_seeds',
+            'expiringBatches',
+            'expiringBatchesCount',
             'monthlySales',
             'categoryStats'
         ));
@@ -995,5 +1015,53 @@ class SeedController extends Controller
         $count = max(1, min(24, (int) $request->input('count', 8)));
 
         return view('admin.print_labels', compact('seed', 'count'));
+    }
+
+    /**
+     * ៣៦. មុខងារបោះពុម្ពបញ្ជីរៀបចំទំនិញរួមប្រចាំថ្ងៃ (Daily Bulk Shipping & Packing Manifest)
+     */
+    public function packingManifest(Request $request)
+    {
+        $status = $request->input('status', 'active');
+        $query = Order::with('items.seed')->orderBy('id', 'asc');
+
+        if ($status === 'pending') {
+            $query->where('status', 'pending');
+        } elseif ($status === 'processing') {
+            $query->where('status', 'processing');
+        } else {
+            // Default active orders to pack and ship
+            $query->whereIn('status', ['pending', 'processing', 'shipping']);
+        }
+
+        $orders = $query->get();
+
+        // Aggregate total seed quantities
+        $seedSummary = [];
+        $totalPacks = 0;
+        $totalRevenueToCollect = 0;
+
+        foreach ($orders as $order) {
+            $totalRevenueToCollect += $order->total_price;
+            foreach ($order->items as $item) {
+                $seedId = $item->seed_id;
+                $seedName = $item->seed?->name_kh ?? 'គ្រាប់ពូជលុបចេញ';
+                $batchNumber = $item->seed?->batch_number ?? '---';
+                $image = $item->seed?->image;
+                $totalPacks += $item->quantity;
+
+                if (! isset($seedSummary[$seedId])) {
+                    $seedSummary[$seedId] = [
+                        'name' => $seedName,
+                        'batch' => $batchNumber,
+                        'image' => $image,
+                        'quantity' => 0,
+                    ];
+                }
+                $seedSummary[$seedId]['quantity'] += $item->quantity;
+            }
+        }
+
+        return view('admin.packing_manifest', compact('orders', 'seedSummary', 'totalPacks', 'totalRevenueToCollect', 'status'));
     }
 }

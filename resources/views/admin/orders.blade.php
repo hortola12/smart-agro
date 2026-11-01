@@ -22,9 +22,14 @@
             <h4 class="fw-bold text-dark mb-1" style="font-family: 'Kantumruy Pro', sans-serif;">គ្រប់គ្រងការកម្ម៉ង់ទិញ (Orders)</h4>
             <p class="text-muted small mb-0">ពិនិត្យមើលបញ្ជីឈ្មោះអ្នកទិញគ្រាប់ពូជ គ្រប់គ្រងស្ថានភាពដឹកជញ្ជូន និងព្រីនវិក្កយបត្រផ្លូវការ</p>
         </div>
-        <a href="{{ url('/admin/orders/export') }}" class="btn btn-outline-success fw-bold rounded-pill px-4 shadow-sm">
-            <i class="fa-solid fa-file-csv me-1.5"></i> ទាញយករបាយការណ៍ CSV
-        </a>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="{{ url('/admin/orders/packing-manifest') }}" target="_blank" class="btn btn-primary fw-bold rounded-pill px-3 shadow-sm">
+                <i class="fa-solid fa-boxes-packing me-1.5"></i> បញ្ជីរៀបចំទំនិញរួម (Packing Manifest)
+            </a>
+            <a href="{{ url('/admin/orders/export') }}" class="btn btn-outline-success fw-bold rounded-pill px-3 shadow-sm">
+                <i class="fa-solid fa-file-csv me-1.5"></i> ទាញយក CSV
+            </a>
+        </div>
     </div>
 
     <!-- 📊 KPI សង្ខេបផ្នែកហិរញ្ញវត្ថុ & ការកម្ម៉ង់ (Financial & Order KPI Cards) -->

@@ -97,6 +97,15 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <small class="text-muted">
+                            <i class="fa-solid fa-shield-halved text-success me-1"></i> មានវិញ្ញាបនបត្រត្រួតពិនិត្យមន្ទីរពិសោធន៍
+                        </small>
+                        <a href="{{ url('/seed-certificate/' . $seed->id) }}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold">
+                            <i class="fa-solid fa-certificate me-1.5 text-warning"></i> មើលវិញ្ញាបនបត្រគុណភាព A4
+                        </a>
+                    </div>
                 @else
                     <div class="p-3 text-center border rounded-3 bg-light">
                         <p class="text-muted mb-0 small"><i class="fa-solid fa-info-circle text-warning me-1"></i>មិនទាន់មានទិន្នន័យតាមដានប្រភពឡើយ (No Data Available)</p>

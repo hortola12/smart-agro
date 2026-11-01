@@ -93,6 +93,43 @@
             color: #ffc107 !important;
         }
 
+        /* 🔘 SPECIAL UTILITY PILL BUTTONS (RIGHT NAV ACTIONS) */
+        .nav-action-pill {
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff !important;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 14px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            white-space: nowrap;
+        }
+
+        .nav-action-pill:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff !important;
+            border-color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-action-pill.active {
+            background: #ffffff;
+            color: #198754 !important;
+            border-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-action-pill.active i {
+            color: #198754 !important;
+        }
+
         /* 📱 FLOATING VERTICAL QUICK DOCK (RIGHT SIDE) */
         .floating-right-dock {
             position: fixed;
@@ -309,14 +346,14 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {{ Request::is('traceability*') || Request::is('trace*') ? 'active' : '' }}" href="{{ url('/traceability') }}">
-                            <i class="fa-solid fa-qrcode me-1"></i> {{ __('menu_traceability') ?? 'តាមដានប្រភពដើម' }}
+                        <a class="nav-link nav-link-custom" href="{{ url('/#farming-guides-section') }}">
+                            <i class="fa-solid fa-book-open-reader me-1"></i> បច្ចេកទេសដាំដុះ
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom" href="{{ url('/#farming-guides-section') }}">
-                            <i class="fa-solid fa-book-open-reader me-1"></i> បច្ចេកទេសដាំដុះ
+                        <a class="nav-link nav-link-custom" href="{{ url('/#seed-calculator-section') }}">
+                            <i class="fa-solid fa-calculator me-1"></i> គណនាគ្រាប់ពូជ
                         </a>
                     </li>
 
@@ -327,11 +364,23 @@
                     </li>
                 </ul>
 
-                <!-- Right Elements: Search, Cart, Auth -->
+                <!-- Right Elements: Quick Actions (Trace QR, Order Tracking), Search, Cart, Auth -->
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 pt-2 pt-lg-0 border-top border-white border-opacity-10 border-lg-0">
+                    <!-- 1. Traceability QR Code Action Pill -->
+                    <a href="{{ url('/traceability') }}" class="nav-action-pill {{ Request::is('traceability*') || Request::is('trace*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-qrcode text-warning me-1.5 fs-6"></i>
+                        <span>តាមដានប្រភព QR</span>
+                    </a>
+
+                    <!-- 2. Fast Order Tracking Action Pill -->
+                    <a href="{{ url('/order-tracking') }}" class="nav-action-pill {{ Request::is('order-tracking*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-truck-fast text-info me-1.5 fs-6"></i>
+                        <span>តាមដានដឹកជញ្ជូន</span>
+                    </a>
+
                     <!-- Search Input -->
                     <form action="{{ url('/search') }}" method="GET" class="m-0">
-                        <div class="input-group input-group-sm rounded-pill overflow-hidden border border-white border-opacity-25 bg-white shadow-sm px-2" style="height: 38px; min-width: 190px;">
+                        <div class="input-group input-group-sm rounded-pill overflow-hidden border border-white border-opacity-25 bg-white shadow-sm px-2" style="height: 38px; min-width: 175px;">
                             <input type="text"
                                 name="search"
                                 class="form-control border-0 bg-white shadow-none ps-2 text-dark"
@@ -389,6 +438,11 @@
                             <li>
                                 <a class="dropdown-item py-2 rounded-3 text-dark fw-bold mt-1" href="{{ url('/my-orders') }}">
                                     <i class="fa-solid fa-box-open text-primary me-2"></i> ប្រវត្តិកម្ម៉ង់ទិញ
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 rounded-3 text-dark fw-bold" href="{{ url('/order-tracking') }}">
+                                    <i class="fa-solid fa-truck-fast text-success me-2"></i> តាមដានការដឹកជញ្ជូន
                                 </a>
                             </li>
                             @if(Auth::user()->role === 'admin')

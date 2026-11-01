@@ -182,14 +182,21 @@
             </small>
         </div>
 
-        <!-- Live Search & Sort in Seed Grid -->
+        <!-- Live Search, Price Filter & Sort in Seed Grid -->
         <div class="d-flex flex-wrap gap-2 align-items-center">
-            <div class="input-group input-group-sm rounded-pill overflow-hidden border bg-white shadow-sm" style="max-width: 240px; height: 38px;">
+            <div class="input-group input-group-sm rounded-pill overflow-hidden border bg-white shadow-sm" style="max-width: 220px; height: 38px;">
                 <span class="input-group-text bg-white border-0 text-muted ps-3">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
                 <input type="text" id="seed-live-search" class="form-control border-0 bg-white" placeholder="ស្វែងរកក្នុងបញ្ជី..." style="font-size: 13px;">
             </div>
+
+            <select id="seed-price-filter" class="form-select form-select-sm rounded-pill border bg-white shadow-sm px-3" style="width: auto; height: 38px; font-size: 13px; font-weight: 600;">
+                <option value="all">តម្លៃ៖ ទាំងអស់ (All)</option>
+                <option value="under-2">ក្រោម $2.00</option>
+                <option value="2-4">$2.00 - $4.00</option>
+                <option value="over-4">លើស $4.00</option>
+            </select>
 
             <select id="seed-sort-select" class="form-select form-select-sm rounded-pill border bg-white shadow-sm px-3" style="width: auto; height: 38px; font-size: 13px; font-weight: 600;">
                 <option value="default">តម្រៀប៖ លំនាំដើម</option>
@@ -200,7 +207,7 @@
         </div>
     </div>
 
-    <!-- Category Filter Pills -->
+    <!-- Category Filter Pills & In-Stock Toggle -->
     <div class="filter-card p-3 mb-4 shadow-sm">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -216,6 +223,13 @@
                         </button>
                     @endforeach
                 @endif
+
+                <div class="form-check form-switch m-0 d-inline-flex align-items-center gap-1.5 ms-md-2 bg-light px-2.5 py-1 rounded-pill border">
+                    <input class="form-check-input m-0" type="checkbox" id="in-stock-only-toggle" style="cursor: pointer;">
+                    <label class="form-check-label small fw-bold text-success mb-0" for="in-stock-only-toggle" style="cursor: pointer; font-size: 12px;">
+                        <i class="fa-solid fa-circle-check me-1"></i>មានក្នុងស្តុក (In Stock)
+                    </label>
+                </div>
             </div>
 
             <button type="button" id="reset-filter-btn" class="btn btn-sm btn-link text-muted text-decoration-none p-0 d-none">
@@ -425,6 +439,129 @@
                         <li><i class="fa-solid fa-check text-success me-2"></i><b>ម្ទេសប្លោកផ្អែម</b> - សាច់ក្រាស់ ពណ៌ស្រស់ឆើត</li>
                         <li><i class="fa-solid fa-check text-success me-2"></i><b>សាឡាត់អ៊ីដ្រូពូនិច</b> - ប្រមូលផលរៀងរាល់ ៣០ ថ្ងៃ</li>
                     </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🧮 ផ្នែកថ្មី៖ ម៉ាស៊ីនគណនាបរិមាណគ្រាប់ពូជតាមទំហំដី (Smart Land & Seed Calculator) -->
+<div id="seed-calculator-section" class="mb-5 pt-3">
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white position-relative overflow-hidden">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-5 border-end-lg pe-lg-4">
+                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1.5 fw-bold mb-2">
+                    <i class="fa-solid fa-calculator me-1"></i> ឧបករណ៍គណនាកសិកម្មឆ្លាតវៃ
+                </span>
+                <h4 class="fw-bold text-dark mb-2" style="font-family: 'Kantumruy Pro', sans-serif;">
+                    គណនាបរិមាណគ្រាប់ពូជតាមទំហំដី
+                </h4>
+                <p class="text-muted small mb-4">
+                    វាយបញ្ចូលទំហំដីចម្ការរបស់អ្នក ដើម្បីដឹងពីចំនួនកញ្ចប់គ្រាប់ពូជដែលត្រូវប្រើ ចន្លោះគុម្ពដាំដុះ និងទិន្នផលប្រមូលផលប៉ាន់ស្មាន។
+                </p>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-dark">១. ជ្រើសរើសប្រភេទបន្លែដាំដុះ៖</label>
+                    <select id="calc-veg-type" class="form-select rounded-pill bg-light border">
+                        <option value="cabbage" data-rate="3" data-spacing="35cm x 40cm" data-yield="1.8" data-maturity="៥៥ - ៧០ ថ្ងៃ" data-name="ស្ពៃបូកគោ / ស្ពៃក្តោប">🥬 ស្ពៃបូកគោ / ស្ពៃក្តោប (Cabbage)</option>
+                        <option value="lettuce" data-rate="4" data-spacing="20cm x 25cm" data-yield="1.2" data-maturity="៣៥ - ៤៥ ថ្ងៃ" data-name="សាឡាត់">🥗 សាឡាត់ (Lettuce)</option>
+                        <option value="cucumber" data-rate="2" data-spacing="50cm x 100cm" data-yield="3.5" data-maturity="៤០ - ៥០ ថ្ងៃ" data-name="ត្រសក់ទ្រើង">🥒 ត្រសក់ទ្រើង (Cucumber)</option>
+                        <option value="tomato" data-rate="2" data-spacing="40cm x 60cm" data-yield="4.0" data-maturity="៦០ - ៧៥ ថ្ងៃ" data-name="ប៉េងប៉ោះ">🍅 ប៉េងប៉ោះ (Tomato)</option>
+                        <option value="morning_glory" data-rate="6" data-spacing="10cm x 15cm" data-yield="2.0" data-maturity="២០ - ២៥ ថ្ងៃ" data-name="ត្រកួន">🌱 ត្រកួនយកស្លឹក (Morning Glory)</option>
+                        <option value="chilli" data-rate="2" data-spacing="50cm x 50cm" data-yield="2.5" data-maturity="៧០ - ៨៥ ថ្ងៃ" data-name="ម្ទេស">🌶️ ម្ទេសហឺរ / ម្ទេសប្លោក (Chilli)</option>
+                    </select>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-7">
+                        <label class="form-label small fw-bold text-dark">២. ទំហំដីជាក់ស្តែង៖</label>
+                        <input type="number" id="calc-land-size" class="form-control rounded-pill bg-light border font-monospace fw-bold" value="500" min="10" step="10">
+                    </div>
+                    <div class="col-5">
+                        <label class="form-label small fw-bold text-dark">ខ្នាតរង្វាស់៖</label>
+                        <select id="calc-land-unit" class="form-select rounded-pill bg-light border">
+                            <option value="m2">ម៉ែត្រការ៉េ (m²)</option>
+                            <option value="rai">រ៉ៃ (១,៦០០ m²)</option>
+                            <option value="ha">ហិកតា (១០,០០០ m²)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" id="btn-calculate-seeds" class="btn btn-success fw-bold rounded-pill px-4 py-2 w-100 shadow-sm">
+                        <i class="fa-solid fa-calculator me-1"></i> គណនាឥឡូវនេះ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Result Display Card -->
+            <div class="col-lg-7 ps-lg-4">
+                <div class="p-4 rounded-4 bg-light border shadow-sm h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <span class="fw-bold text-success small text-uppercase">
+                            <i class="fa-solid fa-square-poll-vertical me-1"></i> លទ្ធផលគណនាប៉ាន់ស្មាន
+                        </span>
+                        <span id="calc-crop-title" class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1 fw-bold">
+                            ស្ពៃបូកគោ / ស្ពៃក្តោប
+                        </span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <small class="text-muted d-block fw-bold mb-1">
+                                    <i class="fa-solid fa-box-open text-success me-1"></i> បរិមាណគ្រាប់ពូជដែលត្រូវប្រើ
+                                </small>
+                                <div class="d-flex align-items-baseline gap-1">
+                                    <h3 id="calc-seed-packs" class="fw-bold text-success font-monospace mb-0">2</h3>
+                                    <span class="fw-bold text-dark">កញ្ចប់</span>
+                                </div>
+                                <small id="calc-area-summary" class="text-muted" style="font-size: 11.5px;">សម្រាប់ដី 500 m²</small>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <small class="text-muted d-block fw-bold mb-1">
+                                    <i class="fa-solid fa-scale-balanced text-primary me-1"></i> ទិន្នផលប្រមូលផលប៉ាន់ស្មាន
+                                </small>
+                                <div class="d-flex align-items-baseline gap-1">
+                                    <h3 id="calc-yield-amount" class="fw-bold text-primary font-monospace mb-0">900</h3>
+                                    <span class="fw-bold text-dark">គីឡូក្រាម (kg)</span>
+                                </div>
+                                <small class="text-muted" style="font-size: 11.5px;">អត្រាជោគជ័យខ្ពស់ ៩៥%+</small>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <small class="text-muted d-block fw-bold mb-1">
+                                    <i class="fa-solid fa-arrows-left-right text-warning me-1"></i> ចន្លោះគុម្ពណែនាំ
+                                </small>
+                                <span id="calc-spacing" class="fw-bold text-dark font-monospace">35cm x 40cm</span>
+                                <small class="text-muted d-block" style="font-size: 11px;">ងាយស្រួលថែទាំ និងចាំងពន្លឺថ្ងៃ</small>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-white rounded-3 border h-100">
+                                <small class="text-muted d-block fw-bold mb-1">
+                                    <i class="fa-solid fa-clock text-info me-1"></i> អាយុកាលប្រមូលផល
+                                </small>
+                                <span id="calc-maturity" class="fw-bold text-dark">៥៥ - ៧០ ថ្ងៃ</span>
+                                <small class="text-muted d-block" style="font-size: 11px;">អាស្រ័យលើការថែទាំ</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between p-2.5 bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25 flex-wrap gap-2">
+                        <div class="small text-dark fw-bold">
+                            <i class="fa-solid fa-seedling text-success me-1"></i> ជ្រើសរើសគ្រាប់ពូជសុទ្ធពី Grow2Growth ដើម្បីធានាបានលទ្ធផលនេះ!
+                        </div>
+                        <a href="#featured-seeds-section" class="btn btn-success btn-sm rounded-pill fw-bold px-3">
+                            <i class="fa-solid fa-basket-shopping me-1"></i> ទៅកាន់បញ្ជីគ្រាប់ពូជ
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -711,13 +848,18 @@
     </div>
 </div>
 
-<!-- 💻 CLIENT-SIDE FILTER & REAL-TIME SEARCH SCRIPT -->
+<!-- 💻 CLIENT-SIDE FILTER, REAL-TIME SEARCH & SEED CALCULATOR SCRIPT -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // -------------------------------------------------------------
+    // ១. មុខងារ FILTER & LIVE SEARCH
+    // -------------------------------------------------------------
     const filterButtons = document.querySelectorAll('.filter-btn');
     const seedItems = Array.from(document.querySelectorAll('.seed-item'));
     const liveSearchInput = document.getElementById('seed-live-search');
     const sortSelect = document.getElementById('seed-sort-select');
+    const priceFilter = document.getElementById('seed-price-filter');
+    const inStockToggle = document.getElementById('in-stock-only-toggle');
     const noSeedsMsg = document.getElementById('no-seeds-filter-message');
     const visibleCountBadge = document.getElementById('visible-seeds-count');
     const resetFilterBtn = document.getElementById('reset-filter-btn');
@@ -727,17 +869,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function applyFiltersAndSort() {
         const query = liveSearchInput.value.toLowerCase().trim();
+        const priceVal = priceFilter ? priceFilter.value : 'all';
+        const inStockOnly = inStockToggle ? inStockToggle.checked : false;
+
         let visibleItems = [];
 
-        // 1. Filter by Category & Search Query
+        // 1. Filter by Category, Search Query, Price Range, and Stock
         seedItems.forEach(item => {
             const itemCategory = item.getAttribute('data-category-id');
             const itemName = item.getAttribute('data-name');
+            const itemPrice = parseFloat(item.getAttribute('data-price') || '0');
+            const itemStock = parseInt(item.getAttribute('data-stock') || '0');
 
             const matchesCategory = (currentCategory === 'all' || itemCategory === currentCategory);
             const matchesQuery = (!query || itemName.includes(query));
+            const matchesStock = (!inStockOnly || itemStock > 0);
 
-            if (matchesCategory && matchesQuery) {
+            let matchesPrice = true;
+            if (priceVal === 'under-2') {
+                matchesPrice = itemPrice < 2.0;
+            } else if (priceVal === '2-4') {
+                matchesPrice = itemPrice >= 2.0 && itemPrice <= 4.0;
+            } else if (priceVal === 'over-4') {
+                matchesPrice = itemPrice > 4.0;
+            }
+
+            if (matchesCategory && matchesQuery && matchesStock && matchesPrice) {
                 item.classList.remove('d-none');
                 visibleItems.push(item);
             } else {
@@ -770,7 +927,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Show/hide reset button
-        if (currentCategory !== 'all' || query !== '') {
+        const isFiltered = currentCategory !== 'all' || query !== '' || priceVal !== 'all' || inStockOnly || sortBy !== 'default';
+        if (isFiltered) {
             resetFilterBtn.classList.remove('d-none');
         } else {
             resetFilterBtn.classList.add('d-none');
@@ -797,16 +955,95 @@ document.addEventListener('DOMContentLoaded', function() {
         applyFiltersAndSort();
     });
 
+    // Price filter selection change
+    if (priceFilter) {
+        priceFilter.addEventListener('change', function() {
+            applyFiltersAndSort();
+        });
+    }
+
+    // In-Stock Only toggle change
+    if (inStockToggle) {
+        inStockToggle.addEventListener('change', function() {
+            applyFiltersAndSort();
+        });
+    }
+
     // Reset filters
     resetFilterBtn.addEventListener('click', function() {
         currentCategory = 'all';
         liveSearchInput.value = '';
         sortSelect.value = 'default';
+        if (priceFilter) priceFilter.value = 'all';
+        if (inStockToggle) inStockToggle.checked = false;
+
         filterButtons.forEach(b => b.classList.remove('active'));
         const allBtn = document.querySelector(`.filter-btn[data-category='all']`);
         if (allBtn) allBtn.classList.add('active');
         applyFiltersAndSort();
     });
+
+    // -------------------------------------------------------------
+    // ២. ម៉ាស៊ីនគណនាបរិមាណគ្រាប់ពូជតាមទំហំដី (Smart Land & Seed Calculator)
+    // -------------------------------------------------------------
+    const calcVegSelect = document.getElementById('calc-veg-type');
+    const calcSizeInput = document.getElementById('calc-land-size');
+    const calcUnitSelect = document.getElementById('calc-land-unit');
+    const calcBtn = document.getElementById('btn-calculate-seeds');
+
+    function runSeedCalculation() {
+        if (!calcVegSelect || !calcSizeInput || !calcUnitSelect) return;
+
+        const sizeVal = parseFloat(calcSizeInput.value) || 0;
+        if (sizeVal <= 0) return;
+
+        const unit = calcUnitSelect.value;
+        let areaInM2 = sizeVal;
+        let unitText = `${sizeVal} ម៉ែត្រការ៉េ (m²)`;
+
+        if (unit === 'rai') {
+            areaInM2 = sizeVal * 1600;
+            unitText = `${sizeVal} រ៉ៃ (${(areaInM2).toLocaleString()} m²)`;
+        } else if (unit === 'ha') {
+            areaInM2 = sizeVal * 10000;
+            unitText = `${sizeVal} ហិកតា (${(areaInM2).toLocaleString()} m²)`;
+        }
+
+        const selectedOption = calcVegSelect.options[calcVegSelect.selectedIndex];
+        const ratePer1000m2 = parseFloat(selectedOption.getAttribute('data-rate') || '3');
+        const yieldPerM2 = parseFloat(selectedOption.getAttribute('data-yield') || '2.0');
+        const spacingText = selectedOption.getAttribute('data-spacing') || '30cm x 30cm';
+        const maturityText = selectedOption.getAttribute('data-maturity') || '៤៥ - ៦០ ថ្ងៃ';
+        const cropName = selectedOption.getAttribute('data-name') || 'ដំណាំបន្លែ';
+
+        // គណនាចំនួនកញ្ចប់ (1 pack is standard agricultural pack)
+        const packsNeeded = Math.max(1, Math.ceil((areaInM2 / 1000) * ratePer1000m2));
+        const estimatedYieldKg = Math.round(areaInM2 * yieldPerM2);
+
+        // Update UI
+        document.getElementById('calc-crop-title').textContent = cropName;
+        document.getElementById('calc-seed-packs').textContent = packsNeeded;
+        document.getElementById('calc-area-summary').textContent = `សម្រាប់ផ្ទៃដី ${unitText}`;
+        document.getElementById('calc-yield-amount').textContent = estimatedYieldKg.toLocaleString();
+        document.getElementById('calc-spacing').textContent = spacingText;
+        document.getElementById('calc-maturity').textContent = maturityText;
+    }
+
+    if (calcBtn) {
+        calcBtn.addEventListener('click', runSeedCalculation);
+    }
+    if (calcVegSelect) {
+        calcVegSelect.addEventListener('change', runSeedCalculation);
+    }
+    if (calcSizeInput) {
+        calcSizeInput.addEventListener('input', runSeedCalculation);
+    }
+    if (calcUnitSelect) {
+        calcUnitSelect.addEventListener('change', runSeedCalculation);
+    }
+
+    // Run once on initial load
+    runSeedCalculation();
 });
 </script>
 

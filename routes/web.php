@@ -25,6 +25,7 @@ Route::get('/', function () {
 
 // ២. ទំព័រព័ត៌មានលម្អិតគ្រាប់ពូជ
 Route::get('/seed-detail/{id}', [SeedController::class, 'seedDetail']);
+Route::get('/seed-certificate/{id}', [SeedController::class, 'seedCertificate'])->name('seed.certificate');
 
 //  កែសម្រួល៖ ប្តូរឱ្យទៅជា /change-language/ ឱ្យត្រូវគ្នា ១០០% ជាមួយប៊ូតុងប្តូរភាសា KH/EN លើរបារ Navbar
 Route::get('/change-language/{locale}', [SeedController::class, 'changeLanguage']);
@@ -155,6 +156,7 @@ Route::middleware([AdminMiddleware::class])->group(function () {
     Route::get('/admin/orders', [SeedController::class, 'adminOrders']);
     Route::post('/admin/orders/status/{id}', [SeedController::class, 'updateOrderStatus']);
     Route::delete('/admin/orders/delete/{id}', [SeedController::class, 'destroyOrder']);
+    Route::get('/admin/orders/packing-manifest', [SeedController::class, 'packingManifest']);
 
     // ៥. គ្រប់គ្រងប្រភេទបន្លែ (Admin Categories Management)
     Route::get('/admin/categories', [SeedController::class, 'adminCategories']);

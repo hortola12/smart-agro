@@ -28,6 +28,9 @@
 
         <!-- Quick Action Shortcuts -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="{{ url('/admin/orders/packing-manifest') }}" target="_blank" class="btn btn-primary btn-sm fw-bold rounded-pill px-3 shadow-sm">
+                <i class="fa-solid fa-boxes-packing me-1"></i> បញ្ជីរៀបចំទំនិញ
+            </a>
             <a href="{{ url('/admin/seeds/create') }}" class="btn btn-success btn-sm fw-bold rounded-pill px-3 shadow-sm">
                 <i class="fa-solid fa-plus me-1"></i> បន្ថែមគ្រាប់ពូជ
             </a>
@@ -240,6 +243,79 @@
                                         </div>
                                     </div>
                                 </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- ⏳ EXPIRING SEED BATCHES ALERT WIDGET -->
+    @if(isset($expiringBatches) && count($expiringBatches) > 0)
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white border-start border-warning border-4">
+        <div class="card-header bg-white border-0 py-3.5 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h6 class="fw-bold text-dark mb-0" style="font-family: 'Kantumruy Pro', sans-serif;">
+                    <i class="fa-solid fa-hourglass-half text-warning me-2"></i>
+                    ការជូនដំណឹង៖ គ្រាប់ពូជដែលជិតផុតកំណត់ (Expiring Batches Alert - ក្នុងរយៈពេល ៦០ ថ្ងៃ)
+                </h6>
+                <small class="text-muted">វគ្គផលិតគ្រាប់ពូជដែលជិតហួសកាលបរិច្ឆេទ គួរពិចារណាធ្វើ Promotion ឬផ្លាស់ប្តូរវគ្គថ្មី</small>
+            </div>
+            <a href="{{ url('/admin/traceability') }}" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 fw-bold">
+                គ្រប់គ្រងលេខបាច់ទាំងអស់ <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 13.5px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ឈ្មោះគ្រាប់ពូជ</th>
+                            <th>លេខវគ្គផលិត (Batch)</th>
+                            <th>កាលបរិច្ឆេទផុតកំណត់</th>
+                            <th>រយៈពេលនៅសល់</th>
+                            <th class="text-center pe-4">សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($expiringBatches as $eBatch)
+                        @php
+                            $expiryDate = \Carbon\Carbon::parse($eBatch->expiry_date);
+                            $isExpired = $expiryDate->isPast();
+                            $daysRemaining = (int) now()->diffInDays($expiryDate, false);
+                        @endphp
+                        <tr>
+                            <td class="ps-4">
+                                <strong class="text-dark">{{ $eBatch->seed?->name_kh ?? 'គ្រាប់ពូជ' }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-primary border font-monospace">#{{ $eBatch->batch_number }}</span>
+                            </td>
+                            <td class="font-monospace fw-bold text-danger">
+                                {{ $eBatch->expiry_date }}
+                            </td>
+                            <td>
+                                @if($isExpired)
+                                    <span class="badge bg-danger rounded-pill px-2.5 py-1 fw-bold">
+                                        <i class="fa-solid fa-circle-xmark me-1"></i> ផុតកំណត់ហើយ
+                                    </span>
+                                @elseif($daysRemaining <= 30)
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-2.5 py-1 fw-bold">
+                                        នៅសល់តែ {{ $daysRemaining }} ថ្ងៃទៀត
+                                    </span>
+                                @else
+                                    <span class="badge bg-warning bg-opacity-20 text-dark border border-warning rounded-pill px-2.5 py-1 fw-bold">
+                                        នៅសល់ {{ $daysRemaining }} ថ្ងៃទៀត
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="text-center pe-4">
+                                <a href="{{ url('/admin/traceability/show/' . $eBatch->id) }}" class="btn btn-sm btn-light border rounded-pill px-3 fw-bold text-secondary">
+                                    <i class="fa-solid fa-eye me-1 text-primary"></i> ពិនិត្យ
+                                </a>
                             </td>
                         </tr>
                         @endforeach
