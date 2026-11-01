@@ -19,51 +19,132 @@
         /* 🟢 កែសម្រួលពុម្ពអក្សរ៖ ប្តូរមកប្រើពុម្ពអក្សរ Kantumruy Pro ជំនាន់ថ្មី ងាយស្រួលមើល និងមានវិជ្ជាជីវៈខ្ពស់ */
         body { font-family: 'Kantumruy Pro', 'Koh Santepheap', sans-serif; background-color: #fafdff; color: #333; }
         .bg-eco-green { background-color: #198754 !important; } /* ពណ៌បៃតងកសិកម្មស្តង់ដារ */
-        .grow-auth-pill { border-radius: 50px; font-weight: bold; font-size: 13px; padding: 6px 16px; transition: all 0.3s shadow; }
-        .grow-btn-login { background-color: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.6); }
-        .grow-btn-login:hover { background-color: rgba(255,255,255,0.1); color: #fff; }
-        .grow-btn-register { background-color: #fff; color: #198754; border: 1px solid #fff; margin-left: 5px; shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .grow-btn-register:hover { background-color: #e8f5e9; color: #198754; }
+        .grow-auth-pill { border-radius: 50px; font-weight: bold; font-size: 13px; padding: 6px 16px; transition: all 0.3s ease; }
+        .grow-btn-login { background-color: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.7); }
+        .grow-btn-login:hover { background-color: rgba(255,255,255,0.15); color: #fff; transform: translateY(-1px); }
+        .grow-btn-register { background-color: #fff; color: #198754; border: 1.5px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .grow-btn-register:hover { background-color: #e8f5e9; color: #198754; transform: translateY(-1px); }
         .dropdown-item.active, .dropdown-item:active { background-color: #198754 !important; }
+        .nav-link-custom {
+            color: rgba(255, 255, 255, 0.9) !important;
+            padding: 8px 14px !important;
+            border-radius: 50px;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        .nav-link-custom:hover {
+            color: #ffffff !important;
+            background-color: rgba(255, 255, 255, 0.16);
+            transform: translateY(-1px);
+        }
+        .nav-link-custom.active {
+            color: #ffffff !important;
+            background-color: rgba(0, 0, 0, 0.2);
+            font-weight: 800;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .hover-warning:hover {
+            color: #ffc107 !important;
+        }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-eco-green shadow-sm py-2 sticky-top">
+    <!-- 📞 TOP ANNOUNCEMENT & UTILITY BAR -->
+    <div class="top-utility-bar py-1.5 px-3 d-none d-md-block text-white" style="background-color: #113824; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <span>
+                    <i class="fa-solid fa-phone text-warning me-1"></i> ជំនួយកសិករ៖
+                    <a href="tel:053952888" class="text-white text-decoration-none fw-bold hover-warning">053 952 888</a>
+                </span>
+                <span class="opacity-50">|</span>
+                <span>
+                    <i class="fa-solid fa-location-dot text-success me-1"></i> កសិដ្ឋានតាក្រាម ស្រុកបាណន់ ខេត្តបាត់ដំបង
+                </span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span>
+                    <i class="fa-solid fa-truck-fast text-warning me-1"></i> ដឹកជញ្ជូនរហ័ស ២៥ ខេត្ត-ក្រុង
+                </span>
+                <span class="opacity-50">|</span>
+                <a href="https://t.me/" target="_blank" class="text-white text-decoration-none fw-bold hover-warning">
+                    <i class="fa-brands fa-telegram text-info me-1"></i> Telegram Channel
+                </a>
+                <span class="opacity-50">|</span>
+                <!-- Language Switcher in top bar -->
+                <div class="d-inline-flex gap-1">
+                    <a href="{{ url('/change-language/kh') }}" class="badge rounded-pill text-decoration-none {{ session()->get('locale') == 'kh' || !session()->has('locale') ? 'bg-warning text-dark fw-bold' : 'bg-white bg-opacity-10 text-white' }} px-2 py-1">🇰🇭 KH</a>
+                    <a href="{{ url('/change-language/en') }}" class="badge rounded-pill text-decoration-none {{ session()->get('locale') == 'en' ? 'bg-warning text-dark fw-bold' : 'bg-white bg-opacity-10 text-white' }} px-2 py-1">🇬🇧 EN</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🟢 MAIN STICKY NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-eco-green sticky-top shadow-sm py-2">
         <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url('/') }}" style="font-size: 19px;">
-                <i class="fa-solid fa-seedling me-2 text-warning fs-4"></i>
-                <span>Grow2Growth</span>
+            <!-- Brand Logo -->
+            <a class="navbar-brand fw-bold d-flex align-items-center text-white text-decoration-none me-3" href="{{ url('/') }}">
+                <div class="bg-white text-success rounded-circle d-flex align-items-center justify-content-center me-2.5 shadow-sm" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-seedling fs-5 text-success"></i>
+                </div>
+                <div class="d-flex flex-column leading-tight">
+                    <span class="fs-5 fw-bold font-monospace" style="letter-spacing: 0.5px;">Grow2Growth</span>
+                    <small class="text-warning text-uppercase" style="font-size: 9.5px; letter-spacing: 1px; font-weight: 700;">Smart Seed Traceability</small>
+                </div>
             </a>
 
-            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <!-- Mobile Navbar Actions (Cart + Toggler) -->
+            <div class="d-flex align-items-center gap-2 d-lg-none">
+                <a href="{{ url('/cart') }}" class="btn btn-warning btn-sm rounded-pill px-2.5 py-1 fw-bold position-relative shadow-sm text-dark">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    @if(session('cart') && count(session('cart')) > 0)
+                        <span class="badge rounded-pill bg-danger font-monospace" style="font-size: 10px;">{{ count(session('cart')) }}</span>
+                    @endif
+                </a>
+                <button class="navbar-toggler border-0 shadow-none px-2 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMainCollapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-bold" style="font-size: 14.5px;">
+            <!-- Navbar Links & Search & Right Actions -->
+            <div class="collapse navbar-collapse" id="navbarMainCollapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-bold" style="font-size: 14px;">
                     <li class="nav-item">
-                        <a class="nav-link {{ Request::is('/') ? 'active text-warning fw-bold' : '' }}" href="{{ url('/') }}">
-                            {{ __('menu_home') ?? 'ទំព័រដើម' }}
+                        <a class="nav-link nav-link-custom {{ Request::is('/') ? 'active' : '' }}" href="{{ url('/') }}">
+                            <i class="fa-solid fa-house me-1"></i> {{ __('menu_home') ?? 'ទំព័រដើម' }}
                         </a>
                     </li>
 
+                    <!-- Categories Dropdown with seed counts -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ __('menu_seeds') ?? 'គ្រាប់ពូជបន្លែ' }}
+                        <a class="nav-link nav-link-custom dropdown-toggle {{ Request::is('search*') && request('category_id') ? 'active' : '' }}" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-leaf me-1"></i> {{ __('menu_seeds') ?? 'គ្រាប់ពូជបន្លែ' }}
                         </a>
-                        <ul class="dropdown-menu border-0 shadow-lg rounded-3 py-2" aria-labelledby="categoryDropdown" style="font-size: 13.5px;">
+                        <ul class="dropdown-menu dropdown-menu-agro border-0 shadow-lg rounded-4 p-2 mt-2" aria-labelledby="categoryDropdown" style="min-width: 260px; font-size: 13.5px;">
+                            <li class="px-3 py-1.5 text-muted small fw-bold text-uppercase border-bottom mb-1" style="font-size: 11px; letter-spacing: 0.5px;">
+                                ជ្រើសរើសតាមប្រភេទបន្លែ
+                            </li>
                             <li>
-                                <a class="dropdown-item py-1.5 fw-bold text-success" href="{{ url('/#featured-seeds-section') }}">
-                                    <i class="fa-solid fa-border-all me-2"></i>គ្រាប់ពូជទាំងអស់ (All Seeds)
+                                <a class="dropdown-item rounded-3 py-2 fw-bold text-success d-flex justify-content-between align-items-center" href="{{ url('/#featured-seeds-section') }}">
+                                    <span><i class="fa-solid fa-border-all me-2"></i>គ្រាប់ពូជទាំងអស់</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill font-monospace">All</span>
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider my-1"></li>
                             @if(isset($navCategories))
                                 @foreach($navCategories as $cat)
                                     <li>
-                                        <a class="dropdown-item py-1.5 text-secondary" href="{{ url('/#featured-seeds-section') }}" onclick="setTimeout(() => { const btn = document.querySelector(`.filter-btn[data-category='{{ $cat->id }}']`); if(btn) btn.click(); }, 150);">
-                                            <i class="fa-solid fa-chevron-right text-success me-2" style="font-size: 10px;"></i>{{ App::isLocale('en') ? $cat->name_en : $cat->name_kh }}
+                                        <a class="dropdown-item rounded-3 py-2 text-dark d-flex justify-content-between align-items-center" href="{{ url('/search?category_id=' . $cat->id) }}">
+                                            <span>
+                                                <i class="fa-solid fa-chevron-right text-success me-2" style="font-size: 10px;"></i>
+                                                {{ App::isLocale('en') ? $cat->name_en : $cat->name_kh }}
+                                            </span>
+                                            <span class="badge bg-light text-muted border rounded-pill font-monospace" style="font-size: 11px;">
+                                                {{ $cat->seeds_count ?? 0 }}
+                                            </span>
                                         </a>
                                     </li>
                                 @endforeach
@@ -72,101 +153,108 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link {{ Request::is('traceability*') || Request::is('trace*') ? 'active text-warning fw-bold' : '' }}" href="{{ url('/traceability') }}">
-                            {{ __('menu_traceability') ?? 'តាមដានប្រភពដើម' }}
+                        <a class="nav-link nav-link-custom {{ Request::is('traceability*') || Request::is('trace*') ? 'active' : '' }}" href="{{ url('/traceability') }}">
+                            <i class="fa-solid fa-qrcode me-1"></i> {{ __('menu_traceability') ?? 'តាមដានប្រភពដើម' }}
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/#farming-guides-section') }}">
-                            បច្ចេកទេសដាំដុះ
+                        <a class="nav-link nav-link-custom" href="{{ url('/#farming-guides-section') }}">
+                            <i class="fa-solid fa-book-open-reader me-1"></i> បច្ចេកទេសដាំដុះ
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/#about-farm-section') }}">
-                            អំពីកសិដ្ឋាន
+                        <a class="nav-link nav-link-custom" href="{{ url('/#about-farm-section') }}">
+                            <i class="fa-solid fa-tractor me-1"></i> អំពីកសិដ្ឋាន
                         </a>
                     </li>
                 </ul>
 
-                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2">
-                    <a href="https://t.me/" target="_blank" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-bold d-none d-xl-inline-flex align-items-center text-decoration-none me-1" style="font-size: 12px; height: 36px; border-color: rgba(255,255,255,0.4);">
-                        <i class="fa-brands fa-telegram text-warning me-1.5 fs-6"></i>
-                        <span>ជំនួយកសិករ</span>
-                    </a>
-                    <form action="{{ url('/search') }}" method="GET" class="d-flex align-items-center m-0 me-lg-2">
-                        <div class="input-group rounded-pill overflow-hidden border border-light border-opacity-25 bg-white px-2 shadow-sm" style="height: 36px; max-width: 240px;">
+                <!-- Right Elements: Search, Cart, Auth -->
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 pt-2 pt-lg-0 border-top border-white border-opacity-10 border-lg-0">
+                    <!-- Search Input -->
+                    <form action="{{ url('/search') }}" method="GET" class="m-0">
+                        <div class="input-group input-group-sm rounded-pill overflow-hidden border border-white border-opacity-25 bg-white shadow-sm px-2" style="height: 38px; min-width: 190px;">
                             <input type="text"
                                 name="search"
-                                class="form-control border-0 bg-white shadow-none ps-2 small text-dark"
+                                class="form-control border-0 bg-white shadow-none ps-2 text-dark"
                                 placeholder="ស្វែងរកគ្រាប់ពូជ..."
-                                style="font-size: 12.5px; height: 100%;"
+                                value="{{ request('search') }}"
+                                style="font-size: 13px;"
                                 required>
-                            <button class="btn bg-white border-0 text-muted p-0 pe-2" type="submit" style="height: 100%;">
-                                <i class="fa-solid fa-magnifying-glass" style="font-size: 12px;"></i>
+                            <button class="btn bg-white border-0 text-muted p-0 pe-1" type="submit">
+                                <i class="fa-solid fa-magnifying-glass text-success" style="font-size: 13px;"></i>
                             </button>
                         </div>
                     </form>
 
-                    <a href="{{ url('/cart') }}" class="btn btn-success btn-sm me-lg-2 position-relative fw-bold rounded-pill border border-white border-opacity-20 d-inline-flex align-items-center" style="height: 36px; padding: 0 14px;">
-                        <i class="fa-solid fa-basket-shopping me-1.5 text-warning"></i>
+                    <!-- Cart Button (Desktop) -->
+                    <a href="{{ url('/cart') }}" class="btn btn-warning btn-sm fw-bold rounded-pill shadow-sm d-inline-flex align-items-center px-3 text-dark" style="height: 38px;">
+                        <i class="fa-solid fa-basket-shopping me-1.5"></i>
                         <span style="font-size: 13px;">{{ __('cart') ?? 'កន្ត្រក' }}</span>
                         @if(session('cart') && count(session('cart')) > 0)
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow font-monospace" style="font-size: 10px; padding: 4px 6px;">
+                            <span class="badge rounded-pill bg-danger ms-1.5 font-monospace shadow-sm" style="font-size: 10.5px;">
                                 {{ count(session('cart')) }}
                             </span>
                         @endif
                     </a>
 
-                    <div class="btn-group btn-group-sm me-lg-3 rounded-pill overflow-hidden border border-white border-opacity-20" role="group" style="height: 34px;">
-                        <a href="{{ url('/change-language/kh') }}" class="btn btn-success fw-bold btn-sm d-flex align-items-center px-2 {{ session()->get('locale') == 'kh' || !session()->has('locale') ? 'active bg-white text-success' : '' }}" style="font-size: 11px;">🇰🇭 KH</a>
-                        <a href="{{ url('/change-language/en') }}" class="btn btn-success fw-bold btn-sm d-flex align-items-center px-2 {{ session()->get('locale') == 'en' ? 'active bg-white text-success' : '' }}" style="font-size: 11px;">🇬🇧 EN</a>
-                    </div>
+                    <!-- Auth Profile / Login & Register -->
+                    @guest
+                        <div class="d-flex align-items-center gap-1.5">
+                            <a class="btn grow-auth-pill grow-btn-login d-inline-flex align-items-center" href="{{ url('/login') }}" style="height: 38px;">
+                                <i class="fa-solid fa-right-to-bracket me-1.5"></i> <span>ចូលប្រើ</span>
+                            </a>
+                            <a class="btn grow-auth-pill grow-btn-register d-inline-flex align-items-center" href="{{ url('/register') }}" style="height: 38px;">
+                                <i class="fa-solid fa-user-plus me-1.5"></i> <span>ចុះឈ្មោះ</span>
+                            </a>
+                        </div>
+                    @endguest
 
-                    <ul class="navbar-nav align-items-lg-center m-0 p-0 list-unstyled d-flex flex-row gap-2">
-                        @guest
-                            <li class="nav-item d-flex align-items-center gap-1">
-                                <a class="btn grow-auth-pill grow-btn-login d-flex align-items-center" href="{{ url('/login') }}">
-                                    <i class="fa-solid fa-right-to-bracket me-1"></i> <span>ចូលប្រើ</span>
-                                </a>
-                                <a class="btn grow-auth-pill grow-btn-register d-flex align-items-center" href="{{ url('/register') }}">
-                                    <i class="fa-solid fa-user-plus me-1"></i> <span>ចុះឈ្មោះ</span>
-                                </a>
-                            </li>
-                        @endguest
-
-                        @auth
-                            <li class="nav-item">
-                                <a class="nav-link text-white fw-bold me-2 small d-flex align-items-center" href="{{ url('/my-orders') }}">
-                                    <i class="fa-solid fa-box-open text-warning me-1"></i> ប្រវត្តិកម្មង់
-                                </a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle fw-bold text-dark bg-light rounded-pill px-3 border py-1 d-flex align-items-center shadow-sm" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 13.5px;">
-                                    <i class="fa-solid fa-circle-user text-success me-1 fs-5"></i> {{ Auth::user()->name }}
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 mt-2 p-1 bg-white animated fadeIn" aria-labelledby="navbarDropdown" style="font-size: 13.5px;">
+                    @auth
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle fw-bold btn-sm rounded-pill px-3 shadow-sm border py-1.5 d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 13px; height: 38px;">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-1.5 fw-bold" style="width: 24px; height: 24px; font-size: 12px;">
+                                    {{ mb_substr(Auth::user()->name, 0, 1) }}
+                                </div>
+                                <span class="text-truncate" style="max-width: 110px;">{{ Auth::user()->name }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 mt-2 p-1.5 bg-white" style="font-size: 13.5px; min-width: 210px;">
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="fw-bold text-dark text-truncate">{{ Auth::user()->name }}</div>
+                                    <small class="text-muted d-block text-truncate">{{ Auth::user()->email }}</small>
                                     @if(Auth::user()->role === 'admin')
-                                        <a class="dropdown-item py-2 rounded text-dark fw-bold" href="{{ url('/admin/dashboard') }}">
-                                            <i class="fa-solid fa-chart-pie text-success me-2"></i> ផ្ទាំងគ្រប់គ្រង Admin
-                                        </a>
-                                        <div class="dropdown-divider my-1"></div>
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-0.5 mt-1 small fw-bold">Admin</span>
+                                    @else
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 mt-1 small fw-bold">កសិករ (Customer)</span>
                                     @endif
-
-                                    <a class="dropdown-item text-danger py-2 rounded fw-bold" href="{{ route('logout') }}"
-                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 rounded-3 text-dark fw-bold mt-1" href="{{ url('/my-orders') }}">
+                                        <i class="fa-solid fa-box-open text-primary me-2"></i> ប្រវត្តិកម្ម៉ង់ទិញ
+                                    </a>
+                                </li>
+                                @if(Auth::user()->role === 'admin')
+                                    <li>
+                                        <a class="dropdown-item py-2 rounded-3 text-dark fw-bold" href="{{ url('/admin/dashboard') }}">
+                                            <i class="fa-solid fa-chart-pie text-warning me-2"></i> ផ្ទាំង Admin Dashboard
+                                        </a>
+                                    </li>
+                                @endif
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger py-2 rounded-3 fw-bold" href="{{ route('logout') }}"
+                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                         <i class="fa-solid fa-power-off me-2"></i> ចាកចេញពីប្រព័ន្ធ
                                     </a>
-
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
-                                </div>
-                            </li>
-                        @endauth
-                    </ul>
+                                </li>
+                            </ul>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                @csrf
+                            </form>
+                        </div>
+                    @endauth
                 </div>
             </div>
         </div>

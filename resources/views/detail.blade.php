@@ -12,10 +12,17 @@
     <div class="row g-5 mb-5">
         <div class="col-md-5">
             <div class="position-relative">
-                <img src="{{ $seed->image ? asset('uploads/seeds/' . $seed->image) : 'https://via.placeholder.com/500x500' }}"
-                     class="img-fluid detail-seed-img shadow-sm w-100 rounded-4 border"
-                     alt="Seed Image"
-                     style="max-height: 420px; object-fit: cover;">
+                @if($seed->image)
+                    <img src="{{ asset('uploads/seeds/' . $seed->image) }}"
+                         class="img-fluid detail-seed-img shadow-sm w-100 rounded-4 border"
+                         alt="{{ $seed->name_kh }}"
+                         style="max-height: 420px; object-fit: cover;">
+                @else
+                    <div class="d-flex flex-column align-items-center justify-content-center bg-light rounded-4 border text-muted shadow-sm" style="height: 380px;">
+                        <i class="fa-solid fa-seedling fs-1 text-success opacity-50 mb-3"></i>
+                        <span class="fw-bold">Grow2Growth Quality Seed</span>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -106,9 +113,19 @@
 
             <div class="pt-2">
                 @if($seed->stock > 0)
-                    <form action="{{ url('/add-to-cart/' . $seed->id) }}" method="POST" class="m-0">
+                    <form action="{{ url('/add-to-cart/' . $seed->id) }}" method="POST" class="d-flex align-items-center gap-3 flex-wrap m-0">
                         @csrf
-                        <button type="submit" class="btn btn-success btn-lg px-5 fw-bold rounded-pill shadow seed-btn py-2" style="font-size: 16px;">
+                        <div class="input-group rounded-pill overflow-hidden border bg-light shadow-sm" style="max-width: 140px; height: 48px;">
+                            <button class="btn btn-link text-success border-0 px-3 text-decoration-none" type="button" onclick="const input = document.getElementById('seedDetailQty'); if(input.value > 1) input.value--;">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <input type="number" id="seedDetailQty" name="quantity" value="1" min="1" max="{{ $seed->stock }}" class="form-control border-0 bg-transparent text-center fw-bold text-dark font-monospace" style="font-size: 16px;">
+                            <button class="btn btn-link text-success border-0 px-3 text-decoration-none" type="button" onclick="const input = document.getElementById('seedDetailQty'); if(input.value < {{ $seed->stock }}) input.value++;">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg px-5 fw-bold rounded-pill shadow seed-btn d-inline-flex align-items-center" style="height: 48px; font-size: 16px;">
                             <i class="fa-solid fa-cart-plus me-2"></i>{{ __('add_to_cart') }}
                         </button>
                     </form>

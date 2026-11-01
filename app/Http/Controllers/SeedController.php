@@ -342,28 +342,32 @@ class SeedController extends Controller
     }
 
     // ១៤. មុខងារសម្រាប់បន្ថែមគ្រាប់ពូជចូលក្នុងកន្ត្រកទំនិញ (Session Cart)
-    public function addToCart($id)
+    public function addToCart(Request $request, $id)
     {
         $seed = Seed::findOrFail($id);
         // ឆែកមើលមុន បើអស់ស្តុកហើយ មិនឱ្យដាក់ចូលកន្ត្រកឡើយ
         if ($seed->stock <= 0) {
             return redirect()->back()->with('error', 'សុំទោស! គ្រាប់ពូជនេះអស់ពីស្តុកហើយ។');
         }
+
+        $quantityToAdd = max(1, (int) $request->input('quantity', 1));
         $cart = session()->get('cart', []);
+        $currentQty = isset($cart[$id]) ? $cart[$id]['quantity'] : 0;
+
+        if ($currentQty + $quantityToAdd > $seed->stock) {
+            return redirect()->back()->with('error', "មិនអាចបន្ថែមបានទេ ព្រោះលើសចំនួនស្តុកដែលមាន (ស្តុកនៅសល់ត្រឹមតែ {$seed->stock} កញ្ចប់)!");
+        }
+
         if (! isset($cart[$id])) {
             $cart[$id] = [
                 'name' => $seed->name_kh,
-                'quantity' => 1,
+                'quantity' => $quantityToAdd,
                 'price' => $seed->price,
                 'image' => $seed->image,
                 'stock' => $seed->stock,
             ];
         } else {
-            if ($cart[$id]['quantity'] < $seed->stock) {
-                $cart[$id]['quantity']++;
-            } else {
-                return redirect()->back()->with('error', 'មិនអាចបន្ថែមបានទេ ព្រោះលើសចំនួនស្តុកដែលមាន!');
-            }
+            $cart[$id]['quantity'] += $quantityToAdd;
         }
         session()->put('cart', $cart);
 
@@ -622,17 +626,31 @@ class SeedController extends Controller
     }
 
     /**
-     * ២៥. មុខងារសម្រាប់ស្វែងរកឈ្មោះគ្រាប់ពូជ (Search Seeds)
+     * ២៥. មុខងារសម្រាប់ស្វែងរកឈ្មោះគ្រាប់ពូជ (Search Seeds) & Filter តាមប្រភេទ
      */
     public function searchSeeds(Request $request)
     {
         $query = $request->input('search');
-        $seeds = Seed::where('name_kh', 'LIKE', "%{$query}%")
-            ->orWhere('name_en', 'LIKE', "%{$query}%")
-            ->with('category')
-            ->get();
+        $categoryId = $request->input('category_id');
 
-        return view('search', compact('seeds', 'query'));
+        $seedsQuery = Seed::with(['category', 'traceability']);
+
+        if ($query) {
+            $seedsQuery->where(function ($q) use ($query) {
+                $q->where('name_kh', 'LIKE', "%{$query}%")
+                    ->orWhere('name_en', 'LIKE', "%{$query}%")
+                    ->orWhere('batch_number', 'LIKE', "%{$query}%");
+            });
+        }
+
+        if ($categoryId && $categoryId !== 'all') {
+            $seedsQuery->where('category_id', $categoryId);
+        }
+
+        $seeds = $seedsQuery->get();
+        $selectedCategory = $categoryId ? Category::find($categoryId) : null;
+
+        return view('search', compact('seeds', 'query', 'selectedCategory'));
     }
 
     // ២៦. មុខងារសម្រាប់តាមដានស្កេនលេខ Batch របស់កសិករ (Traceability Tracking Search)

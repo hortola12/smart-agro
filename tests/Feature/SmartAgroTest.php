@@ -320,4 +320,52 @@ class SmartAgroTest extends TestCase
         $response->assertSee('roth_farmer@smartagro.kh');
         $response->assertSee('$45.00');
     }
+
+    public function test_search_supports_category_filter(): void
+    {
+        $cat1 = Category::create(['name_kh' => 'បន្លែស្លឹក', 'name_en' => 'Leafy']);
+        $cat2 = Category::create(['name_kh' => 'បន្លែផ្លែ', 'name_en' => 'Fruit']);
+
+        Seed::create([
+            'category_id' => $cat1->id,
+            'name_kh' => 'ស្ពៃក្តោប',
+            'name_en' => 'Cabbage',
+            'price' => 2.0,
+            'stock' => 10,
+            'batch_number' => 'BATCH-CAB',
+        ]);
+
+        Seed::create([
+            'category_id' => $cat2->id,
+            'name_kh' => 'ប៉េងប៉ោះ',
+            'name_en' => 'Tomato',
+            'price' => 3.0,
+            'stock' => 10,
+            'batch_number' => 'BATCH-TOM',
+        ]);
+
+        $response = $this->get('/search?category_id='.$cat1->id);
+        $response->assertStatus(200);
+        $response->assertSee('ស្ពៃក្តោប');
+        $response->assertDontSee('ប៉េងប៉ោះ');
+    }
+
+    public function test_add_to_cart_supports_custom_quantity(): void
+    {
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'សាឡាត់',
+            'name_en' => 'Lettuce',
+            'price' => 1.5,
+            'stock' => 20,
+            'batch_number' => 'BATCH-QTY',
+        ]);
+
+        $this->post('/add-to-cart/'.$seed->id, ['quantity' => 5]);
+
+        $cart = session('cart');
+        $this->assertNotNull($cart);
+        $this->assertEquals(5, $cart[$seed->id]['quantity']);
+    }
 }
