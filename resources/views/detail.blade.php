@@ -157,11 +157,22 @@
                         <button type="submit" class="btn btn-success btn-lg px-5 fw-bold rounded-pill shadow seed-btn d-inline-flex align-items-center" style="height: 48px; font-size: 16px;">
                             <i class="fa-solid fa-cart-plus me-2"></i>{{ __('add_to_cart') }}
                         </button>
+
+                        <button type="button" onclick="toggleDetailWishlist({{ $seed->id }})" class="btn btn-outline-danger btn-lg rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center" style="height: 48px;" id="detailWishlistBtn">
+                            <i class="{{ isset(session('wishlist')[$seed->id]) ? 'fa-solid' : 'fa-regular' }} fa-heart me-2" id="detailWishlistIcon"></i>
+                            <span id="detailWishlistText">{{ isset(session('wishlist')[$seed->id]) ? 'បានរក្សាទុក' : 'ពេញចិត្ត' }}</span>
+                        </button>
                     </form>
                 @else
-                    <button class="btn btn-secondary btn-lg px-5 fw-bold rounded-pill shadow-sm" disabled>
-                        <i class="fa-solid fa-ban me-2"></i>{{ __('out_of_stock') }}
-                    </button>
+                    <div class="d-flex align-items-center gap-3">
+                        <button class="btn btn-secondary btn-lg px-5 fw-bold rounded-pill shadow-sm" disabled style="height: 48px;">
+                            <i class="fa-solid fa-ban me-2"></i>{{ __('out_of_stock') }}
+                        </button>
+                        <button type="button" onclick="toggleDetailWishlist({{ $seed->id }})" class="btn btn-outline-danger btn-lg rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center" style="height: 48px;" id="detailWishlistBtn">
+                            <i class="{{ isset(session('wishlist')[$seed->id]) ? 'fa-solid' : 'fa-regular' }} fa-heart me-2" id="detailWishlistIcon"></i>
+                            <span id="detailWishlistText">{{ isset(session('wishlist')[$seed->id]) ? 'បានរក្សាទុក' : 'ពេញចិត្ត' }}</span>
+                        </button>
+                    </div>
                 @endif
             </div>
         </div>
@@ -372,4 +383,50 @@
         </div>
     </div>
 </div>
+
+<script>
+function toggleDetailWishlist(seedId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+    const icon = document.getElementById('detailWishlistIcon');
+    const text = document.getElementById('detailWishlistText');
+    const btn = document.getElementById('detailWishlistBtn');
+
+    if (btn) {
+        btn.style.transform = 'scale(1.08)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 200);
+    }
+
+    fetch(`/wishlist/toggle/${seedId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            if (icon && text) {
+                if (data.added) {
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                    text.textContent = 'បានរក្សាទុក';
+                } else {
+                    icon.classList.remove('fa-solid');
+                    icon.classList.add('fa-regular');
+                    text.textContent = 'ពេញចិត្ត';
+                }
+            }
+
+            // Update badge counts in header and dock
+            document.querySelectorAll('.header-wishlist-count, .dock-wishlist-count').forEach(el => {
+                el.textContent = data.count;
+                el.style.display = data.count > 0 ? '' : 'none';
+            });
+        }
+    })
+    .catch(err => console.error('Wishlist toggle error:', err));
+}
+</script>
 @endsection

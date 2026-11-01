@@ -286,6 +286,16 @@
                             <i class="fa-solid fa-ban me-1"></i>អស់ស្តុក
                         </span>
                     @endif
+
+                    <!-- Wishlist Floating Toggle Heart -->
+                    <button type="button"
+                            class="btn-wishlist-toggle position-absolute bottom-0 end-0 m-2.5 z-2 border-0 rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+                            style="width: 32px; height: 32px; background: rgba(255,255,255,0.92); backdrop-filter: blur(4px); cursor: pointer; transition: transform 0.2s;"
+                            onclick="toggleWishlist(event, {{ $seed->id }})"
+                            id="wishlist-btn-{{ $seed->id }}"
+                            title="រក្សាទុកក្នុងបញ្ជីពេញចិត្ត">
+                        <i class="{{ isset(session('wishlist')[$seed->id]) ? 'fa-solid text-danger' : 'fa-regular text-secondary' }} fa-heart fs-6" id="wishlist-icon-{{ $seed->id }}"></i>
+                    </button>
                 </div>
 
                 <div class="card-body p-3 d-flex flex-column">
@@ -1057,6 +1067,53 @@ document.addEventListener('DOMContentLoaded', function() {
     // Run once on initial load
     runSeedCalculation();
 });
+
+// ❤️ Wishlist Interactive Toggle Handler
+function toggleWishlist(event, seedId) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+    const icon = document.getElementById(`wishlist-icon-${seedId}`);
+    const btn = document.getElementById(`wishlist-btn-${seedId}`);
+
+    if (btn) {
+        btn.style.transform = 'scale(1.3)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 200);
+    }
+
+    fetch(`/wishlist/toggle/${seedId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            if (icon) {
+                if (data.added) {
+                    icon.classList.remove('fa-regular', 'text-secondary');
+                    icon.classList.add('fa-solid', 'text-danger');
+                } else {
+                    icon.classList.remove('fa-solid', 'text-danger');
+                    icon.classList.add('fa-regular', 'text-secondary');
+                }
+            }
+
+            // Update badge counts across header and dock
+            document.querySelectorAll('.header-wishlist-count, .dock-wishlist-count').forEach(el => {
+                el.textContent = data.count;
+                el.style.display = data.count > 0 ? '' : 'none';
+            });
+        }
+    })
+    .catch(err => console.error('Wishlist toggle error:', err));
+}
 </script>
 
 @endsection

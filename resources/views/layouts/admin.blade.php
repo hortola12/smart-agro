@@ -117,6 +117,10 @@
                     <i class="fa-solid fa-star text-warning"></i> មតិ និងការវាយតម្លៃ
                 </a>
 
+                <a href="{{ url('/admin/coupons') }}" class="nav-link {{ request()->is('admin/coupons*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-ticket text-danger"></i> លេខកូដបញ្ចុះតម្លៃ
+                </a>
+
                 <hr class="text-secondary mx-3 my-3 opacity-25">
 
                 <a href="{{ url('/') }}" class="nav-link text-white-50">
@@ -161,6 +165,9 @@
                     </a>
                     <a href="{{ url('/admin/reviews') }}" class="nav-link {{ request()->is('admin/reviews*') ? 'active bg-success text-white' : 'text-white-50' }} p-2.5 rounded-3 d-flex align-items-center mb-1">
                         <i class="fa-solid fa-star text-warning me-2.5"></i> មតិ និងការវាយតម្លៃ
+                    </a>
+                    <a href="{{ url('/admin/coupons') }}" class="nav-link {{ request()->is('admin/coupons*') ? 'active bg-success text-white' : 'text-white-50' }} p-2.5 rounded-3 d-flex align-items-center mb-1">
+                        <i class="fa-solid fa-ticket text-danger me-2.5"></i> លេខកូដបញ្ចុះតម្លៃ
                     </a>
                     <hr class="text-secondary opacity-25 my-3">
                     <a href="{{ url('/') }}" class="nav-link text-white-50 p-2.5 rounded-3 d-flex align-items-center mb-1">

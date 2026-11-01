@@ -53,6 +53,14 @@ Route::get('/cart', [SeedController::class, 'showCart']);
 Route::post('/add-to-cart/{id}', [SeedController::class, 'addToCart']);
 Route::patch('/update-cart', [SeedController::class, 'updateCart']);
 Route::delete('/remove-from-cart', [SeedController::class, 'removeFromCart']);
+Route::post('/cart/apply-coupon', [SeedController::class, 'applyCoupon'])->name('cart.apply_coupon');
+Route::post('/cart/remove-coupon', [SeedController::class, 'removeCoupon'])->name('cart.remove_coupon');
+
+// ❤️ PUBLIC WISHLIST ROUTES (ប្រព័ន្ធគ្រាប់ពូជពេញចិត្ត)
+Route::get('/wishlist', [SeedController::class, 'showWishlist'])->name('wishlist.show');
+Route::post('/wishlist/toggle/{id}', [SeedController::class, 'toggleWishlist'])->name('wishlist.toggle');
+Route::post('/wishlist/move-to-cart/{id}', [SeedController::class, 'moveWishlistToCart'])->name('wishlist.move_to_cart');
+Route::post('/wishlist/clear', [SeedController::class, 'clearWishlist'])->name('wishlist.clear');
 
 /* ==========================================================================
     CUSTOM AUTHENTICATION ROUTES (ប្រព័ន្ធ Login / Register / Logout)
@@ -181,4 +189,10 @@ Route::middleware([AdminMiddleware::class])->group(function () {
     // ១០. គ្រប់គ្រងមតិយោបល់ និងការវាយតម្លៃរបស់អតិថិជន (Admin Reviews Management)
     Route::get('/admin/reviews', [SeedController::class, 'adminReviews']);
     Route::delete('/admin/reviews/delete/{id}', [SeedController::class, 'destroyReview']);
+
+    // ១១. គ្រប់គ្រងលេខកូដបញ្ចុះតម្លៃ (Admin Coupons Management)
+    Route::get('/admin/coupons', [SeedController::class, 'adminCoupons']);
+    Route::post('/admin/coupons', [SeedController::class, 'adminStoreCoupon']);
+    Route::post('/admin/coupons/{id}/toggle', [SeedController::class, 'adminToggleCoupon']);
+    Route::delete('/admin/coupons/{id}', [SeedController::class, 'adminDestroyCoupon']);
 });

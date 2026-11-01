@@ -82,6 +82,11 @@
 
                         <td class="text-end fw-bold text-danger total-price font-monospace fs-6">
                             ${{ number_format($order->total_price, 2) }}
+                            @if($order->coupon_code)
+                                <small class="d-block text-success font-monospace fw-normal" style="font-size: 11px;">
+                                    <i class="fa-solid fa-tag me-1"></i>{{ $order->coupon_code }} (-${{ number_format($order->discount_amount, 2) }})
+                                </small>
+                            @endif
                         </td>
 
                         <td class="pe-4 text-center">
@@ -195,7 +200,14 @@
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-2 border-muted border-opacity-25">
+                        @if($order->coupon_code)
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top small text-success">
+                                <span><i class="fa-solid fa-tag me-1"></i>លេខកូដបញ្ចុះតម្លៃ ({{ $order->coupon_code }}):</span>
+                                <span class="fw-bold font-monospace">- ${{ number_format($order->discount_amount, 2) }}</span>
+                            </div>
+                        @endif
+
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-2 border-muted border-opacity-25">
                             <h5 class="fw-bold text-dark m-0" style="font-size: 15.5px; font-family: 'Kantumruy Pro', sans-serif;">ទឹកប្រាក់សរុបរួម៖</h5>
                             <h4 class="fw-bold text-danger m-0 font-monospace" style="font-size: 22px;">${{ number_format($order->total_price, 2) }}</h4>
                         </div>

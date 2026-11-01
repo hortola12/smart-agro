@@ -77,13 +77,93 @@
 
             <div class="col-lg-4">
                 <div class="card summary-card border-0 p-4 shadow-sm bg-white rounded-4">
-                    <h5 class="fw-bold text-dark mb-4 pb-3 border-bottom d-flex align-items-center" style="font-family: 'Kantumruy Pro', sans-serif;">
+                    <h5 class="fw-bold text-dark mb-3 pb-3 border-bottom d-flex align-items-center" style="font-family: 'Kantumruy Pro', sans-serif;">
                         <i class="fa-solid fa-receipt text-success me-2"></i>សង្ខេបការបញ្ជាទិញ
                     </h5>
 
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <span class="text-secondary fw-bold">{{ __('total_amount') ?? 'ទឹកប្រាក់សរុប' }}</span>
-                        <span class="total-price text-danger fw-bold fs-4 font-monospace">${{ number_format($total, 2) }}</span>
+                    <!-- Promo Code / Coupon Section -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        @if(session('coupon_success'))
+                            <div class="alert alert-success alert-dismissible fade show rounded-3 p-2 small mb-2" role="alert">
+                                <i class="fa-solid fa-circle-check me-1"></i>{{ session('coupon_success') }}
+                                <button type="button" class="btn-close p-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+
+                        @if(session('coupon_error'))
+                            <div class="alert alert-danger alert-dismissible fade show rounded-3 p-2 small mb-2" role="alert">
+                                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ session('coupon_error') }}
+                                <button type="button" class="btn-close p-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+
+                        @php
+                            $appliedCoupon = session('applied_coupon');
+                            $discountAmount = 0;
+                            if ($appliedCoupon) {
+                                if ($appliedCoupon['discount_type'] === 'percentage') {
+                                    $discountAmount = round(($total * $appliedCoupon['discount_value']) / 100, 2);
+                                } else {
+                                    $discountAmount = min($total, $appliedCoupon['discount_value']);
+                                }
+                            }
+                            $finalTotal = max(0, $total - $discountAmount);
+                            $finalRiel = number_format($finalTotal * 4100);
+                        @endphp
+
+                        @if($appliedCoupon)
+                            <div class="p-2.5 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 d-flex align-items-center justify-content-between">
+                                <div>
+                                    <span class="badge bg-success font-monospace me-1">
+                                        <i class="fa-solid fa-tag me-1"></i>{{ $appliedCoupon['code'] }}
+                                    </span>
+                                    <small class="text-success fw-bold">- ${{ number_format($discountAmount, 2) }}</small>
+                                </div>
+                                <form action="{{ route('cart.remove_coupon') }}" method="POST" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="btn btn-link text-danger p-0 small text-decoration-none" title="ដកកូដចេញ">
+                                        <i class="fa-solid fa-xmark fs-6"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        @else
+                            <form action="{{ route('cart.apply_coupon') }}" method="POST" class="m-0">
+                                @csrf
+                                <label class="form-label small fw-bold text-muted mb-1.5">
+                                    <i class="fa-solid fa-ticket text-warning me-1"></i>លេខកូដបញ្ចុះតម្លៃ (Coupon Code)
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="code" class="form-control rounded-start-pill text-uppercase font-monospace" placeholder="ឧ. AGRO2026" required>
+                                    <button class="btn btn-dark fw-bold rounded-end-pill px-3" type="submit">
+                                        អនុវត្ត
+                                    </button>
+                                </div>
+                                <div class="mt-1.5">
+                                    <small class="text-muted" style="font-size: 11px;">កូដណែនាំ: <code class="cursor-pointer text-success fw-bold" onclick="document.querySelector('input[name=code]').value='AGRO2026'">AGRO2026</code> (បញ្ចុះ ១០%)</small>
+                                </div>
+                            </form>
+                        @endif
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="d-flex justify-content-between align-items-center mb-2 small">
+                        <span class="text-muted">តម្លៃទំនិញសរុប (Subtotal)</span>
+                        <span class="text-dark fw-bold font-monospace">${{ number_format($total, 2) }}</span>
+                    </div>
+
+                    @if($appliedCoupon)
+                        <div class="d-flex justify-content-between align-items-center mb-2 small text-success">
+                            <span><i class="fa-solid fa-tag me-1"></i>បញ្ចុះតម្លៃ (Discount)</span>
+                            <span class="fw-bold font-monospace">- ${{ number_format($discountAmount, 2) }}</span>
+                        </div>
+                    @endif
+
+                    <div class="d-flex justify-content-between align-items-center mb-4 pt-2 border-top">
+                        <div>
+                            <span class="text-secondary fw-bold">{{ __('total_amount') ?? 'ទឹកប្រាក់សរុប' }}</span>
+                            <small class="text-muted d-block font-monospace">({{ $finalRiel }} ៛)</small>
+                        </div>
+                        <span class="total-price text-danger fw-bold fs-3 font-monospace">${{ number_format($finalTotal, 2) }}</span>
                     </div>
 
                     @auth

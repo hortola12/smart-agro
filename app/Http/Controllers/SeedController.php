@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Seed;
@@ -399,13 +400,27 @@ class SeedController extends Controller
             return redirect()->back()->with('error', 'កន្ត្រកទំនិញរបស់អ្នកនៅទទេឡើយ!');
         }
 
-        $totalPrice = 0;
+        $subtotal = 0;
         foreach ($cart as $item) {
-            $totalPrice += $item['price'] * $item['quantity'];
+            $subtotal += $item['price'] * $item['quantity'];
+        }
+
+        $appliedCoupon = session()->get('applied_coupon');
+        $couponCode = null;
+        $discountAmount = 0;
+        $totalPrice = $subtotal;
+
+        if ($appliedCoupon) {
+            $coupon = Coupon::find($appliedCoupon['id']);
+            if ($coupon && $coupon->isValidForAmount($subtotal)) {
+                $couponCode = $coupon->code;
+                $discountAmount = $coupon->calculateDiscount($subtotal);
+                $totalPrice = max(0, $subtotal - $discountAmount);
+            }
         }
 
         try {
-            DB::transaction(function () use ($request, $cart, $totalPrice) {
+            DB::transaction(function () use ($request, $cart, $totalPrice, $couponCode, $discountAmount) {
                 // ១. ចាក់សោរ និងកាត់ស្តុកពិតប្រាកដក្នុង Database
                 foreach ($cart as $id => $details) {
                     $seed = Seed::where('id', $id)->lockForUpdate()->first();
@@ -422,8 +437,15 @@ class SeedController extends Controller
                     'customer_phone' => $request->customer_phone,
                     'delivery_address' => $request->delivery_address,
                     'total_price' => $totalPrice,
+                    'coupon_code' => $couponCode,
+                    'discount_amount' => $discountAmount,
                     'status' => 'pending',
                 ]);
+
+                // ប្រសិនបើមានប្រើប្រាស់ Coupon ត្រូវបង្កើនចំនួនប្រើប្រាស់
+                if ($couponCode) {
+                    Coupon::where('code', $couponCode)->increment('used_count');
+                }
 
                 // ៣. រក្សាទុកទំនិញនិមួយៗទៅក្នុងតារាង order_items
                 foreach ($cart as $id => $details) {
@@ -438,6 +460,7 @@ class SeedController extends Controller
             });
 
             session()->forget('cart');
+            session()->forget('applied_coupon');
 
             return redirect('/my-orders')->with('success', 'ការកម្ម៉ង់ទិញរបស់អ្នកទទួលបានជោគជ័យ! លោកអ្នកអាចពិនិត្យស្ថានភាពដឹកជញ្ជូន ឬបោះពុម្ពវិក្កយបត្រនៅទីនេះ។');
         } catch (\Throwable $e) {
@@ -499,6 +522,102 @@ class SeedController extends Controller
         }
 
         return response()->json(['error' => 'រកមិនឃើញទិន្នន័យគ្រាប់ពូជឡើយ'], 400);
+    }
+
+    /**
+     *  មុខងារសម្រាប់បង្ហាញទំព័រគ្រាប់ពូជពេញចិត្ត (Wishlist Page)
+     */
+    public function showWishlist()
+    {
+        $wishlistIds = array_keys(session()->get('wishlist', []));
+        $seeds = Seed::with(['category', 'traceability', 'reviews'])
+            ->whereIn('id', $wishlistIds)
+            ->get();
+
+        return view('wishlist', compact('seeds'));
+    }
+
+    /**
+     *  មុខងារសម្រាប់បន្ថែម ឬដកគ្រាប់ពូជចេញពីបញ្ជីពេញចិត្ត (Toggle Wishlist)
+     */
+    public function toggleWishlist(Request $request, $id)
+    {
+        $seed = Seed::findOrFail($id);
+        $wishlist = session()->get('wishlist', []);
+
+        if (isset($wishlist[$id])) {
+            unset($wishlist[$id]);
+            $added = false;
+            $message = "បានដក {$seed->name_kh} ចេញពីបញ្ជីពេញចិត្ត";
+        } else {
+            $wishlist[$id] = [
+                'id' => $seed->id,
+                'name' => $seed->name_kh,
+                'price' => $seed->price,
+                'image' => $seed->image,
+                'added_at' => now()->toDateTimeString(),
+            ];
+            $added = true;
+            $message = "បានរក្សាទុក {$seed->name_kh} ក្នុងបញ្ជីពេញចិត្ត! ❤️";
+        }
+
+        session()->put('wishlist', $wishlist);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'added' => $added,
+                'count' => count($wishlist),
+                'message' => $message,
+            ]);
+        }
+
+        return back()->with('wishlist_status', $message);
+    }
+
+    /**
+     *  មុខងារសម្រាប់ផ្លាស់ប្តូរគ្រាប់ពូជពី Wishlist ទៅក្នុងកន្ត្រកទំនិញ (Move Wishlist to Cart)
+     */
+    public function moveWishlistToCart(Request $request, $id)
+    {
+        $seed = Seed::findOrFail($id);
+        if ($seed->stock <= 0) {
+            return back()->with('error', 'សុំទោស! គ្រាប់ពូជនេះអស់ពីស្តុកហើយ មិនអាចដាក់ចូលកន្ត្រកបានទេ។');
+        }
+
+        // បញ្ចូលទៅកន្ត្រកទំនិញ
+        $cart = session()->get('cart', []);
+        if (! isset($cart[$id])) {
+            $cart[$id] = [
+                'name' => $seed->name_kh,
+                'quantity' => 1,
+                'price' => $seed->price,
+                'image' => $seed->image,
+                'stock' => $seed->stock,
+            ];
+        } else {
+            if ($cart[$id]['quantity'] < $seed->stock) {
+                $cart[$id]['quantity'] += 1;
+            }
+        }
+        session()->put('cart', $cart);
+
+        // ដកចេញពី Wishlist
+        $wishlist = session()->get('wishlist', []);
+        unset($wishlist[$id]);
+        session()->put('wishlist', $wishlist);
+
+        return back()->with('success', "បានបញ្ចូល {$seed->name_kh} ទៅក្នុងកន្ត្រកទំនិញដោយជោគជ័យ! 🛒");
+    }
+
+    /**
+     *  មុខងារសម្រាប់សម្អាតបញ្ជីពេញចិត្តទាំងអស់ (Clear All Wishlist)
+     */
+    public function clearWishlist()
+    {
+        session()->forget('wishlist');
+
+        return back()->with('success', 'បានសម្អាតបញ្ជីគ្រាប់ពូជពេញចិត្តរួចរាល់!');
     }
 
     /**
@@ -1132,5 +1251,145 @@ class SeedController extends Controller
         $review->delete();
 
         return back()->with('success', 'បានលុបមតិយោបល់អតិថិជនដោយជោគជ័យ! 🗑️');
+    }
+
+    /**
+     *  មុខងារអនុវត្តលេខកូដបញ្ចុះតម្លៃក្នុងកន្ត្រកទំនិញ (Apply Coupon in Cart)
+     */
+    public function applyCoupon(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|max:50',
+        ]);
+
+        $cart = session()->get('cart', []);
+        if (empty($cart)) {
+            return back()->with('coupon_error', 'កន្ត្រកទំនិញរបស់អ្នកនៅទទេឡើយ!');
+        }
+
+        $subtotal = 0;
+        foreach ($cart as $item) {
+            $subtotal += $item['price'] * $item['quantity'];
+        }
+
+        $code = strtoupper(trim($request->code));
+        $coupon = Coupon::where('code', $code)->first();
+
+        if (! $coupon || ! $coupon->is_active) {
+            return back()->with('coupon_error', 'លេខកូដបញ្ចុះតម្លៃមិនត្រឹមត្រូវ ឬត្រូវបានបិទដំណើរការ!');
+        }
+
+        if ($coupon->expires_at && $coupon->expires_at->isPast() && ! $coupon->expires_at->isToday()) {
+            return back()->with('coupon_error', 'លេខកូដបញ្ចុះតម្លៃនេះបានផុតកំណត់ហើយ!');
+        }
+
+        if ($coupon->usage_limit !== null && $coupon->used_count >= $coupon->usage_limit) {
+            return back()->with('coupon_error', 'លេខកូដបញ្ចុះតម្លៃនេះត្រូវបានប្រើប្រាស់អស់កូតាកំណត់ហើយ!');
+        }
+
+        if ($subtotal < $coupon->min_order_amount) {
+            return back()->with('coupon_error', 'ការកម្ម៉ង់ត្រូវមានតម្លៃយ៉ាងតិច $'.number_format($coupon->min_order_amount, 2).' ទើបអាចប្រើលេខកូដនេះបាន!');
+        }
+
+        $discount = $coupon->calculateDiscount($subtotal);
+
+        session()->put('applied_coupon', [
+            'id' => $coupon->id,
+            'code' => $coupon->code,
+            'description' => $coupon->description,
+            'discount_type' => $coupon->discount_type,
+            'discount_value' => $coupon->discount_value,
+            'discount_amount' => $discount,
+        ]);
+
+        return back()->with('coupon_success', "បានអនុវត្តលេខកូដ '{$coupon->code}' ជោគជ័យ! បញ្ចុះតម្លៃបាន $".number_format($discount, 2).' 🎉');
+    }
+
+    /**
+     *  មុខងារដកលេខកូដបញ្ចុះតម្លៃចេញពីកន្ត្រក (Remove Coupon)
+     */
+    public function removeCoupon()
+    {
+        session()->forget('applied_coupon');
+
+        return back()->with('coupon_success', 'បានដកលេខកូដបញ្ចុះតម្លៃចេញវិញរួចរាល់!');
+    }
+
+    /**
+     *  មុខងារគ្រប់គ្រងលេខកូដបញ្ចុះតម្លៃសម្រាប់ Admin (Admin Coupons Index)
+     */
+    public function adminCoupons(Request $request)
+    {
+        $query = Coupon::orderBy('created_at', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $coupons = $query->paginate(15);
+        $totalCoupons = Coupon::count();
+        $activeCoupons = Coupon::where('is_active', true)->count();
+
+        return view('admin.coupons', compact('coupons', 'totalCoupons', 'activeCoupons'));
+    }
+
+    /**
+     *  មុខងារបង្កើតលេខកូដបញ្ចុះតម្លៃថ្មី (Admin Store Coupon)
+     */
+    public function adminStoreCoupon(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|unique:coupons,code|max:50',
+            'description' => 'nullable|string|max:255',
+            'discount_type' => 'required|in:percentage,fixed',
+            'discount_value' => 'required|numeric|min:0.01',
+            'min_order_amount' => 'nullable|numeric|min:0',
+            'max_discount_amount' => 'nullable|numeric|min:0',
+            'usage_limit' => 'nullable|integer|min:1',
+            'expires_at' => 'nullable|date',
+        ]);
+
+        Coupon::create([
+            'code' => strtoupper(trim($request->code)),
+            'description' => $request->description,
+            'discount_type' => $request->discount_type,
+            'discount_value' => $request->discount_value,
+            'min_order_amount' => $request->min_order_amount ?? 0,
+            'max_discount_amount' => $request->max_discount_amount,
+            'usage_limit' => $request->usage_limit,
+            'expires_at' => $request->expires_at,
+            'is_active' => true,
+        ]);
+
+        return back()->with('success', 'បានបង្កើតលេខកូដបញ្ចុះតម្លៃថ្មីដោយជោគជ័យ! 🏷️');
+    }
+
+    /**
+     *  មុខងារបើក/បិទ ដំណើរការលេខកូដបញ្ចុះតម្លៃ (Admin Toggle Coupon)
+     */
+    public function adminToggleCoupon($id)
+    {
+        $coupon = Coupon::findOrFail($id);
+        $coupon->is_active = ! $coupon->is_active;
+        $coupon->save();
+
+        $statusText = $coupon->is_active ? 'បានបើកដំណើរការ' : 'បានបិទដំណើរការ';
+
+        return back()->with('success', "{$statusText} លេខកូដ '{$coupon->code}' ដោយជោគជ័យ!");
+    }
+
+    /**
+     *  មុខងារលុបលេខកូដបញ្ចុះតម្លៃ (Admin Destroy Coupon)
+     */
+    public function adminDestroyCoupon($id)
+    {
+        $coupon = Coupon::findOrFail($id);
+        $coupon->delete();
+
+        return back()->with('success', 'បានលុបលេខកូដបញ្ចុះតម្លៃរួចរាល់! 🗑️');
     }
 }

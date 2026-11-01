@@ -287,8 +287,14 @@
                 </div>
             </a>
 
-            <!-- Mobile Navbar Actions (Cart + Toggler) -->
-            <div class="d-flex align-items-center gap-2 d-lg-none">
+            <!-- Mobile Navbar Actions (Wishlist + Cart + Toggler) -->
+            <div class="d-flex align-items-center gap-1.5 d-lg-none">
+                <a href="{{ url('/wishlist') }}" class="btn btn-light btn-sm rounded-pill px-2 py-1 fw-bold position-relative shadow-sm text-danger" title="គ្រាប់ពូជពេញចិត្ត">
+                    <i class="fa-solid fa-heart"></i>
+                    @if(session('wishlist') && count(session('wishlist')) > 0)
+                    <span class="badge rounded-pill bg-danger font-monospace text-white header-wishlist-count" style="font-size: 9.5px;">{{ count(session('wishlist')) }}</span>
+                    @endif
+                </a>
                 <a href="{{ url('/cart') }}" class="btn btn-warning btn-sm rounded-pill px-2.5 py-1 fw-bold position-relative shadow-sm text-dark">
                     <i class="fa-solid fa-basket-shopping"></i>
                     @if(session('cart') && count(session('cart')) > 0)
@@ -420,6 +426,17 @@
                             </button>
                         </div>
                     </form>
+
+                    <!-- Wishlist Button (Desktop) -->
+                    <!-- <a href="{{ url('/wishlist') }}" class="btn btn-outline-light btn-sm fw-bold rounded-pill shadow-sm d-inline-flex align-items-center px-2.5 text-white position-relative" style="height: 38px;" title="គ្រាប់ពូជពេញចិត្ត">
+                        <i class="fa-solid fa-heart text-danger me-1"></i>
+                        <span style="font-size: 13px;">{{ __('ពេញចិត្ត') }}</span>
+                        @if(session('wishlist') && count(session('wishlist')) > 0)
+                        <span class="badge rounded-pill bg-danger ms-1 font-monospace header-wishlist-count" style="font-size: 10.5px;">
+                            {{ count(session('wishlist')) }}
+                        </span>
+                        @endif
+                    </a> -->
 
                     <!-- Cart Button (Desktop) -->
                     <a href="{{ url('/cart') }}" class="btn btn-warning btn-sm fw-bold rounded-pill shadow-sm d-inline-flex align-items-center px-3 text-dark" style="height: 38px;">
@@ -631,6 +648,15 @@
             <span class="dock-badge">{{ count(session('cart')) }}</span>
             @endif
             <span class="dock-tooltip">🛒 កន្ត្រកទំនិញ ({{ count(session('cart', [])) }})</span>
+        </a>
+
+        <!-- 2. Wishlist / Saved Seeds -->
+        <a href="{{ url('/wishlist') }}" class="dock-item text-danger {{ Request::is('wishlist*') ? 'dock-active' : '' }}">
+            <i class="fa-solid fa-heart"></i>
+            @if(session('wishlist') && count(session('wishlist')) > 0)
+            <span class="dock-badge bg-danger dock-wishlist-count">{{ count(session('wishlist')) }}</span>
+            @endif
+            <span class="dock-tooltip">❤️ គ្រាប់ពូជពេញចិត្ត ({{ count(session('wishlist', [])) }})</span>
         </a>
 
         <!-- 2. Order History (My Orders) -->

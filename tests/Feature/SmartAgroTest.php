@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Seed;
 use App\Models\SeedReview;
@@ -747,5 +748,259 @@ class SmartAgroTest extends TestCase
         $this->assertDatabaseMissing('seed_reviews', [
             'id' => $review->id,
         ]);
+    }
+
+    public function test_user_can_toggle_wishlist_via_post_and_json(): void
+    {
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ត្រកួនចិន',
+            'name_en' => 'Morning Glory',
+            'price' => 1.50,
+            'stock' => 10,
+            'batch_number' => 'BATCH-WISH-01',
+        ]);
+
+        // Toggle Add via standard POST
+        $response = $this->post("/wishlist/toggle/{$seed->id}");
+        $response->assertSessionHas('wishlist_status');
+        $this->assertTrue(isset(session('wishlist')[$seed->id]));
+
+        // Toggle Remove via JSON AJAX
+        $jsonResponse = $this->postJson("/wishlist/toggle/{$seed->id}");
+        $jsonResponse->assertStatus(200);
+        $jsonResponse->assertJson([
+            'success' => true,
+            'added' => false,
+            'count' => 0,
+        ]);
+        $this->assertFalse(isset(session('wishlist')[$seed->id]));
+    }
+
+    public function test_wishlist_page_displays_saved_seeds(): void
+    {
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ម្ទេសហាវៃ',
+            'name_en' => 'Bell Pepper',
+            'price' => 3.20,
+            'stock' => 25,
+            'batch_number' => 'BATCH-PEPPER-01',
+        ]);
+
+        // Add to wishlist session
+        $this->withSession([
+            'wishlist' => [
+                $seed->id => [
+                    'id' => $seed->id,
+                    'name' => $seed->name_kh,
+                    'price' => $seed->price,
+                    'image' => null,
+                ],
+            ],
+        ]);
+
+        $response = $this->get('/wishlist');
+        $response->assertStatus(200);
+        $response->assertSee('គ្រាប់ពូជពេញចិត្តរបស់អ្នក');
+        $response->assertSee('ម្ទេសហាវៃ');
+        $response->assertSee('3.20');
+    }
+
+    public function test_user_can_move_wishlist_seed_to_cart_and_clear_wishlist(): void
+    {
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ការ៉ុត',
+            'name_en' => 'Carrot Seed',
+            'price' => 2.80,
+            'stock' => 12,
+            'batch_number' => 'BATCH-CARROT-01',
+        ]);
+
+        $this->withSession([
+            'wishlist' => [
+                $seed->id => [
+                    'id' => $seed->id,
+                    'name' => $seed->name_kh,
+                    'price' => $seed->price,
+                    'image' => null,
+                ],
+            ],
+        ]);
+
+        // Move to Cart
+        $moveResponse = $this->post("/wishlist/move-to-cart/{$seed->id}");
+        $moveResponse->assertSessionHas('success');
+        $this->assertTrue(isset(session('cart')[$seed->id]));
+        $this->assertFalse(isset(session('wishlist')[$seed->id]));
+
+        // Clear Wishlist
+        $this->withSession([
+            'wishlist' => [
+                $seed->id => ['name' => 'Test'],
+            ],
+        ]);
+        $clearResponse = $this->post('/wishlist/clear');
+        $clearResponse->assertSessionHas('success');
+        $this->assertEmpty(session('wishlist', []));
+    }
+
+    public function test_user_can_apply_and_remove_coupon_in_cart(): void
+    {
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'សណ្តែកកួរ',
+            'name_en' => 'Long Bean',
+            'price' => 5.00,
+            'stock' => 20,
+            'batch_number' => 'BATCH-BEAN-01',
+        ]);
+
+        $coupon = Coupon::create([
+            'code' => 'TEST10',
+            'discount_type' => 'percentage',
+            'discount_value' => 10,
+            'min_order_amount' => 5.00,
+            'is_active' => true,
+        ]);
+
+        // Cart with 2 packs = $10.00
+        $this->withSession([
+            'cart' => [
+                $seed->id => [
+                    'name' => $seed->name_kh,
+                    'price' => 5.00,
+                    'quantity' => 2,
+                    'stock' => 20,
+                ],
+            ],
+        ]);
+
+        // Apply valid coupon
+        $response = $this->post('/cart/apply-coupon', [
+            'code' => 'test10', // lowercase input should work (auto uppercased)
+        ]);
+
+        $response->assertSessionHas('coupon_success');
+        $this->assertEquals('TEST10', session('applied_coupon.code'));
+        $this->assertEquals(1.00, session('applied_coupon.discount_amount')); // 10% of $10 = $1.00
+
+        // Remove coupon
+        $removeResponse = $this->post('/cart/remove-coupon');
+        $removeResponse->assertSessionHas('coupon_success');
+        $this->assertNull(session('applied_coupon'));
+    }
+
+    public function test_checkout_applies_discount_and_tracks_coupon_usage(): void
+    {
+        $user = User::create([
+            'name' => 'កសិករ តារា',
+            'email' => 'dara@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'farmer',
+        ]);
+
+        $cat = Category::create(['name_kh' => 'បន្លែ', 'name_en' => 'Veg']);
+        $seed = Seed::create([
+            'category_id' => $cat->id,
+            'name_kh' => 'ត្រប់វែង',
+            'name_en' => 'Eggplant',
+            'price' => 4.00,
+            'stock' => 10,
+            'batch_number' => 'BATCH-EGG-01',
+        ]);
+
+        $coupon = Coupon::create([
+            'code' => 'SAVE2',
+            'discount_type' => 'fixed',
+            'discount_value' => 2.00,
+            'min_order_amount' => 4.00,
+            'usage_limit' => 10,
+            'used_count' => 0,
+            'is_active' => true,
+        ]);
+
+        // 2 items * $4.00 = $8.00 subtotal. Minus $2.00 discount = $6.00 final total
+        $this->actingAs($user)->withSession([
+            'cart' => [
+                $seed->id => [
+                    'name' => $seed->name_kh,
+                    'price' => 4.00,
+                    'quantity' => 2,
+                    'stock' => 10,
+                ],
+            ],
+            'applied_coupon' => [
+                'id' => $coupon->id,
+                'code' => 'SAVE2',
+                'discount_type' => 'fixed',
+                'discount_value' => 2.00,
+                'discount_amount' => 2.00,
+            ],
+        ]);
+
+        $checkoutResponse = $this->post('/checkout', [
+            'customer_name' => 'កសិករ តារា',
+            'customer_phone' => '012888999',
+            'delivery_address' => 'ក្រុងបាត់ដំបង ខេត្តបាត់ដំបង',
+        ]);
+
+        $checkoutResponse->assertRedirect('/my-orders');
+
+        $this->assertDatabaseHas('orders', [
+            'customer_name' => 'កសិករ តារា',
+            'total_price' => 6.00,
+            'coupon_code' => 'SAVE2',
+            'discount_amount' => 2.00,
+        ]);
+
+        $this->assertEquals(1, $coupon->fresh()->used_count);
+    }
+
+    public function test_admin_can_manage_coupons(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Coupon',
+            'email' => 'admin_coupon@smartagro.kh',
+            'password' => bcrypt('secret123'),
+            'role' => 'admin',
+        ]);
+
+        // 1. Create Coupon
+        $response = $this->actingAs($admin)->post('/admin/coupons', [
+            'code' => 'ADMIN50',
+            'description' => 'Half price promo',
+            'discount_type' => 'percentage',
+            'discount_value' => 50,
+            'min_order_amount' => 10,
+        ]);
+
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('coupons', [
+            'code' => 'ADMIN50',
+            'discount_value' => 50,
+        ]);
+
+        $coupon = Coupon::where('code', 'ADMIN50')->first();
+
+        // 2. View in Admin List
+        $viewResponse = $this->actingAs($admin)->get('/admin/coupons');
+        $viewResponse->assertStatus(200);
+        $viewResponse->assertSee('ADMIN50');
+
+        // 3. Toggle Status
+        $toggleResponse = $this->actingAs($admin)->post("/admin/coupons/{$coupon->id}/toggle");
+        $toggleResponse->assertSessionHas('success');
+        $this->assertFalse($coupon->fresh()->is_active);
+
+        // 4. Delete Coupon
+        $deleteResponse = $this->actingAs($admin)->delete("/admin/coupons/{$coupon->id}");
+        $deleteResponse->assertSessionHas('success');
+        $this->assertDatabaseMissing('coupons', ['id' => $coupon->id]);
     }
 }
