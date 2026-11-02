@@ -37,6 +37,62 @@
             transition: all 0.3s ease;
         }
 
+        /* 🌟 Capsule Auth Segmented Design (Compact, Clear & Modern) */
+        .grow-auth-capsule {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 50px;
+            padding: 3px;
+            height: 38px;
+            transition: all 0.25s ease;
+        }
+
+        .grow-auth-capsule:hover {
+            background-color: rgba(255, 255, 255, 0.22);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .grow-capsule-item {
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none !important;
+            padding: 4px 12px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .grow-capsule-login {
+            color: #ffffff;
+        }
+
+        .grow-capsule-login:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .grow-capsule-divider {
+            width: 1px;
+            height: 14px;
+            background-color: rgba(255, 255, 255, 0.35);
+            margin: 0 1px;
+        }
+
+        .grow-capsule-register {
+            background-color: #ffffff;
+            color: #198754;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .grow-capsule-register:hover {
+            background-color: #f0fdf4;
+            color: #157347;
+            transform: translateY(-0.5px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
         .grow-btn-login {
             background-color: transparent;
             color: #fff;
@@ -67,56 +123,73 @@
             background-color: #198754 !important;
         }
 
+        /* 🌿 Dropdown Menus for Agro */
+        .dropdown-menu-agro {
+            background-color: #ffffff;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14) !important;
+        }
+
+        .dropdown-menu-agro .dropdown-item {
+            transition: all 0.15s ease;
+        }
+
+        .dropdown-menu-agro .dropdown-item:hover {
+            background-color: #f0fdf4;
+            color: #198754;
+        }
+
         .nav-link-custom {
-            color: rgba(255, 255, 255, 0.9) !important;
-            padding: 8px 14px !important;
+            color: rgba(255, 255, 255, 0.92) !important;
+            padding: 7px 12px !important;
+            height: 38px;
             border-radius: 50px;
-            transition: all 0.25s ease;
+            font-size: 13.5px;
+            font-weight: 600;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
+            white-space: nowrap;
         }
 
         .nav-link-custom:hover {
             color: #ffffff !important;
-            background-color: rgba(255, 255, 255, 0.16);
+            background-color: rgba(255, 255, 255, 0.18);
             transform: translateY(-1px);
         }
 
         .nav-link-custom.active {
             color: #ffffff !important;
-            background-color: rgba(0, 0, 0, 0.2);
-            font-weight: 800;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: rgba(0, 0, 0, 0.22);
+            font-weight: 700;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
         }
 
         .hover-warning:hover {
             color: #ffc107 !important;
         }
 
-        /* 🔘 SPECIAL UTILITY PILL BUTTONS (RIGHT NAV ACTIONS) */
+        /* 🔘 SPECIAL UTILITY PILL BUTTONS (ACTION LINKS) */
         .nav-action-pill {
-            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.35);
             background: rgba(255, 255, 255, 0.12);
             color: #ffffff !important;
             border-radius: 50px;
             font-size: 13px;
-            font-weight: 700;
-            padding: 6px 14px;
+            font-weight: 600;
+            padding: 6px 12px;
             height: 38px;
             display: inline-flex;
             align-items: center;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
             text-decoration: none;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
             white-space: nowrap;
         }
 
         .nav-action-pill:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.22);
             color: #ffffff !important;
-            border-color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .nav-action-pill.active {
@@ -128,6 +201,56 @@
 
         .nav-action-pill.active i {
             color: #198754 !important;
+        }
+
+        /* 🔍 Responsive Search Box */
+        .navbar-search-box {
+            min-width: 150px;
+            max-width: 195px;
+            transition: all 0.25s ease;
+        }
+
+        .navbar-search-box:focus-within {
+            max-width: 225px;
+        }
+
+        .navbar-search-box:focus-within .input-group {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35) !important;
+        }
+
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            .nav-link-custom {
+                padding: 6px 8px !important;
+                font-size: 12.5px;
+            }
+            .navbar-search-box {
+                min-width: 125px !important;
+                max-width: 155px !important;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            #navbarMainCollapse {
+                padding-top: 10px;
+                padding-bottom: 8px;
+            }
+            .navbar-search-box {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            .nav-link-custom {
+                width: 100%;
+                border-radius: 12px;
+                padding: 9px 14px !important;
+                font-size: 14px;
+            }
+            .grow-auth-capsule {
+                width: 100%;
+            }
+            .grow-capsule-item {
+                flex: 1;
+                justify-content: center;
+            }
         }
 
         /* 📱 FLOATING VERTICAL QUICK DOCK (RIGHT SIDE) */
@@ -244,7 +367,7 @@
 
     <!-- 📞 TOP ANNOUNCEMENT & UTILITY BAR -->
     <div class="top-utility-bar py-1.5 px-3 d-none d-md-block text-white" style="background-color: #113824; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <div class="container d-flex justify-content-between align-items-center">
+        <div class="container-fluid px-3 px-xl-4 px-xxl-5 d-flex justify-content-between align-items-center" style="max-width: 1440px;">
             <div class="d-flex align-items-center gap-3">
                 <span>
                     <i class="fa-solid fa-phone text-warning me-1"></i> ជំនួយកសិករ៖
@@ -275,50 +398,50 @@
 
     <!-- 🟢 MAIN STICKY NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-eco-green sticky-top shadow-sm py-2">
-        <div class="container">
+        <div class="container-fluid px-3 px-xl-4 px-xxl-5" style="max-width: 1440px;">
             <!-- Brand Logo -->
-            <a class="navbar-brand fw-bold d-flex align-items-center text-white text-decoration-none me-3" href="{{ url('/') }}">
-                <div class="bg-white text-success rounded-circle d-flex align-items-center justify-content-center me-2.5 shadow-sm" style="width: 38px; height: 38px;">
+            <a class="navbar-brand fw-bold d-flex align-items-center text-white text-decoration-none me-2 me-xl-4 py-0" href="{{ url('/') }}">
+                <div class="bg-white text-success rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm flex-shrink-0" style="width: 38px; height: 38px;">
                     <i class="fa-solid fa-seedling fs-5 text-success"></i>
                 </div>
                 <div class="d-flex flex-column leading-tight">
-                    <span class="fs-5 fw-bold font-monospace" style="letter-spacing: 0.5px;">Grow2Growth</span>
-                    <small class="text-warning text-uppercase" style="font-size: 9.5px; letter-spacing: 1px; font-weight: 700;">Smart Seed Traceability</small>
+                    <span class="fs-5 fw-bold font-monospace lh-1" style="letter-spacing: 0.5px;">Grow2Growth</span>
+                    <small class="text-warning text-uppercase" style="font-size: 9.5px; letter-spacing: 0.8px; font-weight: 700; margin-top: 2px;">Smart Seed Traceability</small>
                 </div>
             </a>
 
             <!-- Mobile Navbar Actions (Wishlist + Cart + Toggler) -->
-            <div class="d-flex align-items-center gap-1.5 d-lg-none">
-                <a href="{{ url('/wishlist') }}" class="btn btn-light btn-sm rounded-pill px-2 py-1 fw-bold position-relative shadow-sm text-danger" title="គ្រាប់ពូជពេញចិត្ត">
+            <div class="d-flex align-items-center gap-2 d-lg-none ms-auto">
+                <a href="{{ url('/wishlist') }}" class="btn btn-light btn-sm rounded-pill px-2.5 py-1 fw-bold position-relative shadow-sm text-danger" title="គ្រាប់ពូជពេញចិត្ត">
                     <i class="fa-solid fa-heart"></i>
                     @if(session('wishlist') && count(session('wishlist')) > 0)
                     <span class="badge rounded-pill bg-danger font-monospace text-white header-wishlist-count" style="font-size: 9.5px;">{{ count(session('wishlist')) }}</span>
                     @endif
                 </a>
-                <a href="{{ url('/cart') }}" class="btn btn-warning btn-sm rounded-pill px-2.5 py-1 fw-bold position-relative shadow-sm text-dark">
+                <a href="{{ url('/cart') }}" class="btn btn-warning btn-sm rounded-pill px-2.5 py-1 fw-bold position-relative shadow-sm text-dark" title="កន្ត្រកទំនិញ">
                     <i class="fa-solid fa-basket-shopping"></i>
                     @if(session('cart') && count(session('cart')) > 0)
                     <span class="badge rounded-pill bg-danger font-monospace" style="font-size: 10px;">{{ count(session('cart')) }}</span>
                     @endif
                 </a>
-                <button class="navbar-toggler border-0 shadow-none px-2 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMainCollapse">
+                <button class="navbar-toggler border-0 shadow-none px-2 py-1 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMainCollapse" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
             </div>
 
             <!-- Navbar Links & Search & Right Actions -->
             <div class="collapse navbar-collapse" id="navbarMainCollapse">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-bold" style="font-size: 14px; padding:4px">
+                <ul class="navbar-nav align-items-lg-center gap-1 gap-xl-1.5 me-auto mb-3 mb-lg-0 py-2 py-lg-0">
                     <li class="nav-item">
                         <a class="nav-link nav-link-custom {{ Request::is('/') ? 'active' : '' }}" href="{{ url('/') }}">
-                            <i class="fa-solid fa-house me-1"></i> {{ __('menu_home') ?? 'ទំព័រដើម' }}
+                            <i class="fa-solid fa-house me-1.5"></i> {{ __('menu_home') ?? 'ទំព័រដើម' }}
                         </a>
                     </li>
 
                     <!-- Categories Dropdown with seed counts -->
                     <li class="nav-item dropdown">
                         <a class="nav-link nav-link-custom dropdown-toggle {{ Request::is('search*') && request('category_id') ? 'active' : '' }}" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa-solid fa-leaf me-1"></i> {{ __('menu_seeds') ?? 'គ្រាប់ពូជបន្លែ' }}
+                            <i class="fa-solid fa-leaf me-1.5"></i> {{ __('menu_seeds') ?? 'គ្រាប់ពូជបន្លែ' }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-agro border-0 shadow-lg rounded-4 p-2 mt-2" aria-labelledby="categoryDropdown" style="min-width: 260px; font-size: 13.5px;">
                             <li class="px-3 py-1.5 text-muted small fw-bold text-uppercase border-bottom mb-1" style="font-size: 11px; letter-spacing: 0.5px;">
@@ -351,10 +474,24 @@
                         </ul>
                     </li>
 
-                    <!-- 3. Farmer Guides & Tools Sub-Menu Dropdown -->
+                    <!-- Traceability QR Code Link -->
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {{ Request::is('traceability*') || Request::is('trace*') ? 'active' : '' }}" href="{{ url('/traceability') }}">
+                            <i class="fa-solid fa-qrcode text-warning me-1.5"></i> <span>តាមដានប្រភព QR</span>
+                        </a>
+                    </li>
+
+                    <!-- Fast Order Tracking Link -->
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {{ Request::is('order-tracking*') ? 'active' : '' }}" href="{{ url('/order-tracking') }}">
+                            <i class="fa-solid fa-truck-fast text-info me-1.5"></i> <span>តាមដានដឹកជញ្ជូន</span>
+                        </a>
+                    </li>
+
+                    <!-- Farmer Guides & Tools Sub-Menu Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="farmerToolsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa-solid fa-book-open me-1"></i> មគ្គុទ្ទេសក៍កសិករ
+                            <i class="fa-solid fa-book-open me-1.5"></i> <span>មគ្គុទ្ទេសក៍កសិករ</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-agro border-0 shadow-lg rounded-4 p-2 mt-2" aria-labelledby="farmerToolsDropdown" style="min-width: 275px; font-size: 13.5px;">
                             <li class="px-3 py-1.5 text-muted small fw-bold text-uppercase border-bottom mb-1" style="font-size: 11px; letter-spacing: 0.5px;">
@@ -397,23 +534,11 @@
                     </li>
                 </ul>
 
-                <!-- Right Elements: Quick Actions (Trace QR, Order Tracking), Search, Cart, Auth -->
-                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 pt-2 pt-lg-0 border-top border-white border-opacity-10 border-lg-0">
-                    <!-- 1. Traceability QR Code Action Pill -->
-                    <a href="{{ url('/traceability') }}" class="nav-action-pill {{ Request::is('traceability*') || Request::is('trace*') ? 'active' : '' }}">
-                        <i class="fa-solid fa-qrcode text-warning me-1.5 fs-6"> </i>
-                        <span style="padding:4px"> តាមដានប្រភព QR</span>
-                    </a>
-
-                    <!-- 2. Fast Order Tracking Action Pill -->
-                    <a href="{{ url('/order-tracking') }}" class="nav-action-pill {{ Request::is('order-tracking*') ? 'active' : '' }}">
-                        <i class="fa-solid fa-truck-fast text-info me-1.5 fs-6"></i>
-                        <span style="padding:4px">តាមដានដឹកជញ្ជូន</span>
-                    </a>
-
+                <!-- Right Elements: Search, Cart, Auth -->
+                <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 pt-2 pt-lg-0 border-top border-white border-opacity-10 border-lg-0 ms-lg-2">
                     <!-- Search Input -->
-                    <form action="{{ url('/search') }}" method="GET" class="m-0">
-                        <div class="input-group input-group-sm rounded-pill overflow-hidden border border-white border-opacity-25 bg-white shadow-sm px-2" style="height: 38px; min-width: 175px;">
+                    <form action="{{ url('/search') }}" method="GET" class="m-0 navbar-search-box">
+                        <div class="input-group input-group-sm rounded-pill overflow-hidden border border-white border-opacity-25 bg-white shadow-sm px-2 w-100" style="height: 38px;">
                             <input type="text"
                                 name="search"
                                 class="form-control border-0 bg-white shadow-none ps-2 text-dark"
@@ -421,48 +546,40 @@
                                 value="{{ request('search') }}"
                                 style="font-size: 13px;"
                                 required>
-                            <button class="btn bg-white border-0 text-muted p-0 pe-1" type="submit">
+                            <button class="btn bg-white border-0 text-muted p-0 pe-1" type="submit" title="ស្វែងរក">
                                 <i class="fa-solid fa-magnifying-glass text-success" style="font-size: 13px;"></i>
                             </button>
                         </div>
                     </form>
 
-                    <!-- Wishlist Button (Desktop) -->
-                    <!-- <a href="{{ url('/wishlist') }}" class="btn btn-outline-light btn-sm fw-bold rounded-pill shadow-sm d-inline-flex align-items-center px-2.5 text-white position-relative" style="height: 38px;" title="គ្រាប់ពូជពេញចិត្ត">
-                        <i class="fa-solid fa-heart text-danger me-1"></i>
-                        <span style="font-size: 13px;">{{ __('ពេញចិត្ត') }}</span>
-                        @if(session('wishlist') && count(session('wishlist')) > 0)
-                        <span class="badge rounded-pill bg-danger ms-1 font-monospace header-wishlist-count" style="font-size: 10.5px;">
-                            {{ count(session('wishlist')) }}
-                        </span>
-                        @endif
-                    </a> -->
-
-                    <!-- Cart Button (Desktop) -->
-                    <a href="{{ url('/cart') }}" class="btn btn-warning btn-sm fw-bold rounded-pill shadow-sm d-inline-flex align-items-center px-3 text-dark" style="height: 38px;">
+                    <!-- Cart Button (Desktop only - mobile already has cart in top bar) -->
+                    <a href="{{ url('/cart') }}" class="btn btn-warning btn-sm fw-bold rounded-pill shadow-sm d-none d-lg-inline-flex align-items-center px-3 text-dark flex-shrink-0" style="height: 38px;" title="កន្ត្រកទំនិញ">
                         <i class="fa-solid fa-basket-shopping me-1.5"></i>
-                        <span style="font-size: 13px; padding:3px">{{ __('cart') ?? 'កន្ត្រក' }}</span>
+                        <span style="font-size: 13px;">{{ __('cart') ?? 'កន្ត្រក' }}</span>
                         @if(session('cart') && count(session('cart')) > 0)
-                        <span class="badge rounded-pill bg-danger ms-1.5 font-monospace shadow-sm" style="font-size: 10.5px; ">
+                        <span class="badge rounded-pill bg-danger ms-1.5 font-monospace shadow-sm" style="font-size: 10.5px;">
                             {{ count(session('cart')) }}
                         </span>
                         @endif
                     </a>
 
-                    <!-- Auth Profile / Login & Register -->
+                    <!-- Auth Profile / Login & Register (Compact Dual-Action Capsule) -->
                     @guest
-                    <div class="d-flex align-items-center gap-1.5">
-                        <a class="btn grow-auth-pill grow-btn-login d-inline-flex align-items-center" href="{{ url('/login') }}" style="height: 38px;">
-                            <i class="fa-solid fa-right-to-bracket me-1.5"></i> <span>ចូលប្រើ</span>
+                    <div class="grow-auth-capsule d-inline-flex align-items-center shadow-sm flex-shrink-0">
+                        <a class="grow-capsule-item grow-capsule-login" href="{{ url('/login') }}" title="ចូលប្រើប្រាស់ (Login)">
+                            <i class="fa-solid fa-right-to-bracket me-1 opacity-75" style="font-size: 11px;"></i>
+                            <span>ចូល</span>
                         </a>
-                        <a class="btn grow-auth-pill grow-btn-register d-inline-flex align-items-center" href="{{ url('/register') }}" style="height: 38px;">
-                            <i class="fa-solid fa-user-plus me-1.5"></i> <span>ចុះឈ្មោះ</span>
+                        <span class="grow-capsule-divider"></span>
+                        <a class="grow-capsule-item grow-capsule-register" href="{{ url('/register') }}" title="ចុះឈ្មោះថ្មី (Register)">
+                            <i class="fa-solid fa-user-plus me-1" style="font-size: 11px;"></i>
+                            <span>ចុះឈ្មោះ</span>
                         </a>
                     </div>
                     @endguest
 
                     @auth
-                    <div class="dropdown">
+                    <div class="dropdown flex-shrink-0">
                         <button class="btn btn-light dropdown-toggle fw-bold btn-sm rounded-pill px-3 shadow-sm border py-1.5 d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 13px; height: 38px;">
                             <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-1.5 fw-bold" style="width: 24px; height: 24px; font-size: 12px;">
                                 {{ mb_substr(Auth::user()->name, 0, 1) }}

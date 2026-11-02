@@ -350,19 +350,125 @@ h1, h2, h3, h4, h5, h6, .card-title {
     box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
 }
 
-/* 📅 SEASONAL CALENDAR CARDS */
+/* 📅 SEASONAL CALENDAR CARDS & SMART AGRO TIMELINE */
 .season-card {
     background: #ffffff;
     border-radius: 20px;
-    border: 1px solid #e7eee9;
+    border: 1.5px solid #e7eee9;
     padding: 24px;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .season-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+}
+
+.season-card.active-season {
+    box-shadow: 0 12px 28px rgba(25, 135, 84, 0.12);
+    background: linear-gradient(180deg, #ffffff 0%, #fcfffd 100%);
+}
+
+.season-card.active-season.border-warning {
+    border-color: #f59e0b !important;
+    border-width: 2px !important;
+}
+
+.season-card.active-season.border-primary {
+    border-color: #0d6efd !important;
+    border-width: 2px !important;
+}
+
+.season-crop-tag {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.season-crop-tag:hover {
+    background: #198754;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(25, 135, 84, 0.25);
+}
+
+.season-crop-tag.active-crop {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.season-crop-tag.active-crop:hover {
+    background: #f59e0b;
+    color: #ffffff !important;
+}
+
+.agro-month-ribbon::-webkit-scrollbar {
+    height: 4px;
+}
+
+.agro-month-ribbon::-webkit-scrollbar-thumb {
+    background: rgba(25, 135, 84, 0.3);
+    border-radius: 10px;
+}
+
+.month-pill {
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.month-pill:hover {
+    background: #ffffff;
+    border-color: #198754 !important;
+    transform: translateY(-2px);
+}
+
+.month-pill.active-month {
+    background: #198754 !important;
+    border-color: #198754 !important;
+    color: #ffffff !important;
+}
+
+.month-pill.active-month .month-num,
+.month-pill.active-month .month-name {
+    color: #ffffff !important;
+}
+
+.month-pill.active-month .month-season-icon i {
+    color: #fef08a !important;
+}
+
+.season-rainy-stripe {
+    border-top: 3.5px solid #0d6efd !important;
+}
+
+.season-dry-stripe {
+    border-top: 3.5px solid #f59e0b !important;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    animation: agroPulseGlow 1.6s infinite ease-in-out;
+}
+
+@keyframes agroPulseGlow {
+    0% { transform: scale(0.9); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.7; }
 }
 
 /* 💬 TESTIMONIALS */
