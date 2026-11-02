@@ -27,6 +27,11 @@
 | [**tasks.md**](tasks.md) | **កំណត់ត្រាកិច្ចការ និងប្រវត្តិការអភិវឌ្ឍ (Tasks & Milestones)**<br>សង្ខេបកិច្ចការគ្រប់ដំណាក់កាលដែលបានបញ្ចប់ (Phase 1–5), ស្ថិតិតេស្តស្វ័យប្រវត្ត (37 Unit/Feature Tests), និងផែនការអភិវឌ្ឍទៅមុខ (Roadmap)។ |
 | [**memory.md**](memory.md) | **ការចងចាំគម្រោង & ការសម្រេចចិត្តបច្ចេកទេស (Project Memory)**<br>ស្តង់ដារ Timezone (`Asia/Phnom_Penh`), Design System (ពុម្ពអក្សរ Kantumruy Pro, ពណ៌ #198754), ដំណោះស្រាយបញ្ហាធំៗដែលធ្លាប់ឆ្លងកាត់ និង Commands ប្រើញឹកញាប់។ |
 | [**routes.md**](routes.md) | **បញ្ជីផ្លូវ API & Web Routes (Route Reference)**<br>តារាងផ្លូវ URL ទាំងអស់ក្នុងប្រព័ន្ធ (Public Routes, Auth Routes, Protected Admin Routes), HTTP Methods និង Controller Methods ត្រូវគ្នា។ |
+| [**deployment.md**](deployment.md) | **ការដាក់ឱ្យដំណើរការលើ Server (Production Deployment)**<br>មគ្គុទ្ទេសក៍ដំឡើង Nginx, Let's Encrypt SSL, PHP-FPM, File Permissions, Performance Optimization, និង Backup Strategy។ |
+| [**testing.md**](testing.md) | **ការធ្វើតេស្តគុណភាព & QA (Testing Guide)**<br>ដំណើរការតេស្តស្វ័យប្រវត្ត PHPUnit, ការបកស្រាយ ៣៥+ Test Cases, បញ្ជី Manual QA Checklist, និង GitHub Actions CI/CD។ |
+| [**farming_domain.md**](farming_domain.md) | **ចំណេះដឹងកសិកម្ម & ស្តង់ដារគ្រាប់ពូជ (Agro Domain Knowledge)**<br>ប្រវត្តិកសិដ្ឋានតាក្រាមបាត់ដំបង, រដូវកាលទាំង ៣ នៅកម្ពុជា, ស្តង់ដារអត្រាដំណុះ ៩៥%+, និងរូបមន្តគណនាទំហំដី/គ្រាប់ពូជ។ |
+| [**troubleshooting.md**](troubleshooting.md) | **ការដោះស្រាយបញ្ហាបច្ចេកទេស & FAQ (Troubleshooting)**<br>វិធីដោះស្រាយបញ្ហាធំៗ (Error 419, Error 403, Broken Images, Rate Limit 429, Database Connection Errors)។ |
+| [**localization.md**](localization.md) | **ការគ្រប់គ្រងពហុភាសា (Multi-Language & i18n)**<br>រចនាសម្ព័ន្ធភាសាខ្មែរ (KH) និងអង់គ្លេស (EN), JSON Language Files, Dual-Language Database Columns, និងរបៀបបន្ថែមភាសាថ្មី។ |
 
 ---
 
