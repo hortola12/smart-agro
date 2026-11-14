@@ -11,6 +11,16 @@
 <body>
 
     <div class="auth-premium-card">
+        <!-- Top Back to Home Navigation -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{{ url('/') }}" class="text-decoration-none text-muted small fw-bold d-inline-flex align-items-center hover-success" style="transition: all 0.2s ease;">
+                <i class="fa-solid fa-arrow-left-long me-2"></i> ត្រឡប់ទៅទំព័រដើម (Home)
+            </a>
+            <a href="{{ url('/') }}" class="d-flex align-items-center text-success text-decoration-none fw-bold small">
+                <i class="fa-solid fa-seedling me-1"></i> Grow2Growth
+            </a>
+        </div>
+
         <div class="auth-header-wrapper">
             <div class="auth-brand-badge">
                 <i class="fa-solid fa-user-plus me-1.5"></i> JOIN COMMUNITY
@@ -24,7 +34,7 @@
 
             <div class="input-block-custom">
                 <label for="name">ឈ្មោះពេញ (Full Name)</label>
-                <input id="name" type="text" class="field-control-custom @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus placeholder="ឧ. ភារម្យ តូឡា">
+                <input id="name" type="text" class="field-control-custom @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus placeholder="ឧ. ហោ តុលា">
                 @error('name')
                     <span class="invalid-feedback fw-bold mt-1" role="alert"><strong>{{ $message }}</strong></span>
                 @enderror
@@ -32,7 +42,7 @@
 
             <div class="input-block-custom">
                 <label for="email">អ៊ីមែល (Email Address)</label>
-                <input id="email" type="email" class="field-control-custom @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="example@gmail.com">
+                <input id="email" type="email" class="field-control-custom @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="info@gmail.com">
                 @error('email')
                     <span class="invalid-feedback fw-bold mt-1" role="alert"><strong>{{ $message }}</strong></span>
                 @enderror

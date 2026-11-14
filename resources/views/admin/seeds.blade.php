@@ -17,14 +17,55 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h4 class="fw-bold text-dark mb-1" style="font-family: 'Kantumruy Pro', sans-serif;">គ្រប់គ្រងទិន្នន័យគ្រាប់ពូជ</h4>
             <p class="text-muted small mb-0">បន្ថែម កែប្រែ ឬលុបទិន្នន័យគ្រាប់ពូជកសិកម្មក្នុងប្រព័ន្ធ</p>
         </div>
-        <a href="{{ url('/admin/seeds/create') }}" class="btn btn-success fw-bold rounded-pill px-4 shadow-sm">
-             <i class="fa-solid fa-plus me-2"></i>បន្ថែមគ្រាប់ពូជថ្មី
-        </a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url('/admin/seeds/bulk-update') }}" class="btn btn-warning fw-bold rounded-pill px-3 shadow-sm text-dark">
+                <i class="fa-solid fa-bolt me-1.5"></i> កែសម្រួលស្តុក & តម្លៃជាដុំ
+            </a>
+            <a href="{{ url('/admin/seeds/export') }}" class="btn btn-outline-success fw-bold rounded-pill px-3 shadow-sm">
+                <i class="fa-solid fa-file-csv me-1.5"></i>ទាញយក CSV
+            </a>
+            <a href="{{ url('/admin/seeds/create') }}" class="btn btn-success fw-bold rounded-pill px-4 shadow-sm">
+                <i class="fa-solid fa-plus me-2"></i>បន្ថែមគ្រាប់ពូជថ្មី
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+        <form action="{{ url('/admin/seeds') }}" method="GET" class="row g-2 align-items-center m-0">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="search" class="form-control bg-light border-start-0" placeholder="ស្វែងរកតាមឈ្មោះគ្រាប់ពូជ ឬលេខបាច់..." value="{{ request('search') }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="category_id" class="form-select bg-light">
+                    <option value="all">-- ប្រភេទទាំងអស់ (All Categories) --</option>
+                    @if(isset($categories))
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                {{ $cat->name_kh }} ({{ $cat->name_en }})
+                            </option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-success fw-bold rounded-pill px-3 w-100">
+                    <i class="fa-solid fa-filter me-1"></i> ស្វែងរក
+                </button>
+                @if(request('search') || (request('category_id') && request('category_id') !== 'all'))
+                    <a href="{{ url('/admin/seeds') }}" class="btn btn-light border fw-bold rounded-pill px-3" title="លុប Filter">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </a>
+                @endif
+            </div>
+        </form>
     </div>
 
     <div class="card admin-main-card border-0 shadow-sm mb-4">
@@ -83,15 +124,36 @@
                             <td class="text-danger fw-bold fs-6 font-monospace">${{ number_format($seed->price, 2) }}</td>
 
                             <td>
-                                @if($seed->stock > 0)
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 py-1.5 px-3 rounded-pill">{{ $seed->stock }} កញ្ចប់</span>
+                                @if($seed->stock > 5)
+                                    <span class="status-pill-badge status-pill-completed py-1 px-3 shadow-sm">
+                                        <span class="status-dot-pulse status-dot-completed"></span>
+                                        <span class="fw-bold">{{ $seed->stock }} កញ្ចប់</span>
+                                    </span>
+                                @elseif($seed->stock > 0)
+                                    <span class="status-pill-badge status-pill-pending py-1 px-3 shadow-sm">
+                                        <span class="status-dot-pulse status-dot-pending"></span>
+                                        <span class="fw-bold">សល់ {{ $seed->stock }} កញ្ចប់</span>
+                                    </span>
                                 @else
-                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 py-1.5 px-3 rounded-pill">អស់ពីស្តុក</span>
+                                    <span class="status-pill-badge status-pill-cancelled py-1 px-3 shadow-sm">
+                                        <span class="status-dot-pulse status-dot-cancelled"></span>
+                                        <span class="fw-bold">អស់ពីស្តុក</span>
+                                    </span>
                                 @endif
                             </td>
 
                             <td>
-                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                <div class="d-flex justify-content-center align-items-center gap-1.5">
+                                    <!-- Print Sticker Sheet -->
+                                    <a href="{{ url('/admin/seeds/print-labels/' . $seed->id) }}" class="admin-action-btn text-info shadow-sm" title="បោះពុម្ពស្លាក Sticker A4">
+                                        <i class="fa-solid fa-tags"></i>
+                                    </a>
+
+                                    <!-- Quick Restock -->
+                                    <button type="button" class="admin-action-btn text-warning shadow-sm" data-bs-toggle="modal" data-bs-target="#restockModal{{ $seed->id }}" title="បន្ថែមស្តុកបន្ទាន់ (+ Restock)">
+                                        <i class="fa-solid fa-boxes-packing"></i>
+                                    </button>
+
                                     <a href="{{ url('/admin/traceability/show/' . ($seed->traceability?->id ?? $seed->id)) }}" class="admin-action-btn admin-action-btn-trace text-success shadow-sm" title="មើលព័ត៌មានកសិកម្មលម្អិត">
                                         <i class="fa-solid fa-file-shield"></i>
                                     </a>
@@ -108,6 +170,35 @@
                                         </button>
                                     </form>
                                 </div>
+
+                                <!-- Quick Restock Modal -->
+                                <div class="modal fade text-start" id="restockModal{{ $seed->id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-sm">
+                                        <div class="modal-content rounded-4 border-0 shadow">
+                                            <form action="{{ url('/admin/seeds/quick-restock/' . $seed->id) }}" method="POST">
+                                                @csrf
+                                                <div class="modal-header border-0 pb-0">
+                                                    <h6 class="modal-title fw-bold text-dark" style="font-family: 'Kantumruy Pro', sans-serif;">
+                                                        <i class="fa-solid fa-boxes-packing text-warning me-1.5"></i>បន្ថែមស្តុកបន្ទាន់
+                                                    </h6>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body py-3">
+                                                    <div class="mb-2 small">គ្រាប់ពូជ៖ <strong class="text-dark">{{ $seed->name_kh }}</strong></div>
+                                                    <div class="mb-3 small text-muted">ស្តុកបច្ចុប្បន្ន៖ <span class="badge bg-light text-dark border font-monospace">{{ $seed->stock }} កញ្ចប់</span></div>
+                                                    <label class="form-label fw-bold small text-dark">ចំនួនបន្ថែម (កញ្ចប់) <span class="text-danger">*</span></label>
+                                                    <input type="number" name="quantity" class="form-control rounded-3 font-monospace fw-bold" value="20" min="1" required>
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-light rounded-pill btn-sm px-3" data-bs-dismiss="modal">បោះបង់</button>
+                                                    <button type="submit" class="btn btn-warning rounded-pill btn-sm px-3 fw-bold text-dark">
+                                                        <i class="fa-solid fa-plus me-1"></i> បន្ថែមស្តុក
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         @empty
@@ -123,6 +214,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($seeds->hasPages())
+                <div class="p-3 border-top d-flex justify-content-end bg-white">
+                    {{ $seeds->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
         </div>
     </div>
 

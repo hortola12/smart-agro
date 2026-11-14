@@ -236,3 +236,267 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     border: 2px solid #fff;
 }
+
+/* ==========================================================================
+   ✨ MODERN STATUS UI & INTERACTIVE PILLS (Grow2Growth Design System)
+   ========================================================================== */
+
+/* Pulsing dot animation */
+@keyframes statusDotPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 var(--status-glow, rgba(25, 135, 84, 0.6));
+    }
+    70% {
+        transform: scale(1.15);
+        box-shadow: 0 0 0 6px rgba(0, 0, 0, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+.status-dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+    animation: statusDotPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.status-dot-pending {
+    background-color: #d97706;
+    --status-glow: rgba(217, 119, 6, 0.6);
+}
+
+.status-dot-processing {
+    background-color: #0284c7;
+    --status-glow: rgba(2, 132, 199, 0.6);
+}
+
+.status-dot-shipping {
+    background-color: #4f46e5;
+    --status-glow: rgba(79, 70, 229, 0.6);
+}
+
+.status-dot-completed {
+    background-color: #059669;
+    --status-glow: rgba(5, 150, 105, 0.6);
+}
+
+.status-dot-cancelled {
+    background-color: #dc2626;
+    --status-glow: rgba(220, 38, 38, 0.6);
+}
+
+.status-dot-muted {
+    background-color: #64748b;
+    --status-glow: rgba(100, 116, 139, 0.4);
+}
+
+/* Base Interactive Status Dropdown Pill Button */
+.status-pill-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+
+.status-pill-trigger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.status-pill-trigger:focus,
+.status-pill-trigger:active {
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.15);
+}
+
+/* Color Themes for Status Pills */
+.status-pill-pending {
+    background-color: #fffbeb;
+    color: #92400e;
+    border-color: #fde68a;
+}
+.status-pill-pending:hover {
+    background-color: #fef3c7;
+    border-color: #fcd34d;
+    color: #78350f;
+}
+
+.status-pill-processing {
+    background-color: #f0f9ff;
+    color: #0369a1;
+    border-color: #bae6fd;
+}
+.status-pill-processing:hover {
+    background-color: #e0f2fe;
+    border-color: #7dd3fc;
+    color: #0c4a6e;
+}
+
+.status-pill-shipping {
+    background-color: #eef2ff;
+    color: #4338ca;
+    border-color: #c7d2fe;
+}
+.status-pill-shipping:hover {
+    background-color: #e0e7ff;
+    border-color: #a5b4fc;
+    color: #3730a3;
+}
+
+.status-pill-completed {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+.status-pill-completed:hover {
+    background-color: #d1fae5;
+    border-color: #6ee7b7;
+    color: #047857;
+}
+
+.status-pill-cancelled {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+.status-pill-cancelled:hover {
+    background-color: #fee2e2;
+    border-color: #fca5a5;
+    color: #7f1d1d;
+}
+
+.status-pill-secondary {
+    background-color: #f8fafc;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+.status-pill-secondary:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+/* Non-interactive Status Pill Badge */
+.status-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: default;
+    white-space: nowrap;
+}
+
+/* Status Menu Dropdown Card */
+.status-dropdown-card {
+    min-width: 275px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.12), 0 6px 16px -4px rgba(15, 23, 42, 0.06);
+    padding: 6px;
+    background-color: #ffffff;
+    z-index: 1060;
+}
+
+.status-dropdown-header {
+    padding: 8px 12px 10px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: #64748b;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 4px;
+}
+
+.status-option-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    transition: all 0.15s ease;
+    color: #334155;
+    cursor: pointer;
+}
+
+.status-option-btn:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+    transform: translateX(2px);
+}
+
+.status-option-btn.active {
+    background-color: #f1f5f9;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   🗓️ INTERACTIVE CALENDAR & CLOCK WIDGET STYLES
+   ========================================================================== */
+.custom-calendar-toggle {
+    transition: all 0.2s ease;
+    border-color: #e2e8f0 !important;
+}
+
+.custom-calendar-toggle:hover {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+}
+
+.calendar-day-cell {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0 auto;
+    cursor: default;
+    transition: all 0.15s ease;
+    font-weight: 500;
+}
+
+.calendar-day-cell.other-month {
+    color: #cbd5e1;
+}
+
+.calendar-day-cell.today {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(25, 135, 84, 0.4);
+}
+
+.calendar-day-cell:not(.today):not(.other-month):hover {
+    background-color: #e8f5e9;
+    color: #198754;
+    cursor: pointer;
+}
+
+

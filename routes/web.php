@@ -1,38 +1,50 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SeedController;
+use App\Http\Middleware\AdminMiddleware;
+use App\Models\Category;
+use App\Models\Seed;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 
 /* ==========================================================================
-   🌾 FRONTEND / PUBLIC ROUTES (អ្នកណាក៏អាចចូលមើលបាន - មិនបាច់ Login)
+    FRONTEND / PUBLIC ROUTES (អ្នកណាក៏អាចចូលមើលបាន - មិនបាច់ Login)
    ========================================================================== */
 
 // ១. ទំព័រដើមគេហទំព័រ Frontend (Homepage)
 Route::get('/', function () {
-    // 🟢 Eager Load 'traceability' ចូលទៅជាមួយ ដើម្បីឱ្យ Progress Bar ទំព័រដើមបង្ហាញអត្រាលូតលាស់ពិតប្រាកដចេញពី DB
-    $seeds = \App\Models\Seed::with(['category', 'traceability'])->get();
-    return view('home', compact('seeds'));
+    // Eager Load 'traceability' និងរាប់ចំនួនគ្រាប់ពូជក្នុងប្រភេទនីមួយៗ (withCount)
+    $categories = Category::withCount('seeds')->get();
+    $seeds = Seed::with(['category', 'traceability', 'reviews'])->get();
+
+    return view('home', compact('seeds', 'categories'));
 });
 
 // ២. ទំព័រព័ត៌មានលម្អិតគ្រាប់ពូជ
 Route::get('/seed-detail/{id}', [SeedController::class, 'seedDetail']);
+Route::post('/seed-detail/{id}/review', [SeedController::class, 'storeReview'])->name('seed.review.store');
+Route::get('/seed-certificate/{id}', [SeedController::class, 'seedCertificate'])->name('seed.certificate');
 
-// 🟢 កែសម្រួល៖ ប្តូរឱ្យទៅជា /change-language/ ឱ្យត្រូវគ្នា ១០០% ជាមួយប៊ូតុងប្តូរភាសា KH/EN លើរបារ Navbar
+//  កែសម្រួល៖ ប្តូរឱ្យទៅជា /change-language/ ឱ្យត្រូវគ្នា ១០០% ជាមួយប៊ូតុងប្តូរភាសា KH/EN លើរបារ Navbar
 Route::get('/change-language/{locale}', [SeedController::class, 'changeLanguage']);
 
-// 🔍 ផ្លូវសម្រាប់ស្វែងរកឈ្មោះគ្រាប់ពូជទូទៅ (Search Vegetable Seeds)
+//  ផ្លូវសម្រាប់ស្វែងរកឈ្មោះគ្រាប់ពូជទូទៅ (Search Vegetable Seeds)
 Route::get('/search', [SeedController::class, 'searchSeeds']);
 
-// 🟢 ដោះស្រាយបញ្ហា 404៖ ប្តូរពី /trace មកជា /trace-batch ឱ្យត្រូវចំ Form ស្វែងរកលេខបាច់របស់កសិករ លែងលោត Error ទៀតហើយ!
+// ផ្លូវសម្រាប់តាមដានលេខបាច់ (QR Code / Direct URL)
+Route::get('/trace', [SeedController::class, 'traceBatch']);
 Route::get('/trace-batch', [SeedController::class, 'traceBatch']);
 
 // ៣. ទំព័រ Form សម្រាប់ឱ្យកសិករវាយបញ្ចូលលេខ Batch ស្វែងរក
-Route::get('/traceability', function() {
+Route::get('/traceability', function () {
     return view('traceability_search');
 });
 
+// ៤. ទំព័រតាមដានស្ថានភាពការកម្ម៉ង់ទូទៅ (Public Order Tracking)
+Route::get('/order-tracking', [SeedController::class, 'orderTracking'])->name('order.tracking');
 
 /* ==========================================================================
    🛒 PUBLIC CART SESSION ROUTES (ប្រព័ន្ធកន្ត្រកទំនិញទូទៅ)
@@ -41,10 +53,17 @@ Route::get('/cart', [SeedController::class, 'showCart']);
 Route::post('/add-to-cart/{id}', [SeedController::class, 'addToCart']);
 Route::patch('/update-cart', [SeedController::class, 'updateCart']);
 Route::delete('/remove-from-cart', [SeedController::class, 'removeFromCart']);
+Route::post('/cart/apply-coupon', [SeedController::class, 'applyCoupon'])->name('cart.apply_coupon');
+Route::post('/cart/remove-coupon', [SeedController::class, 'removeCoupon'])->name('cart.remove_coupon');
 
+// ❤️ PUBLIC WISHLIST ROUTES (ប្រព័ន្ធគ្រាប់ពូជពេញចិត្ត)
+Route::get('/wishlist', [SeedController::class, 'showWishlist'])->name('wishlist.show');
+Route::post('/wishlist/toggle/{id}', [SeedController::class, 'toggleWishlist'])->name('wishlist.toggle');
+Route::post('/wishlist/move-to-cart/{id}', [SeedController::class, 'moveWishlistToCart'])->name('wishlist.move_to_cart');
+Route::post('/wishlist/clear', [SeedController::class, 'clearWishlist'])->name('wishlist.clear');
 
 /* ==========================================================================
-   🔐 CUSTOM AUTHENTICATION ROUTES (ប្រព័ន្ធ Login / Register / Logout)
+    CUSTOM AUTHENTICATION ROUTES (ប្រព័ន្ធ Login / Register / Logout)
    ========================================================================== */
 
 // ១. ទំព័រចូលប្រើប្រាស់ (Login)
@@ -60,11 +79,12 @@ Route::post('/login', function (Request $request) {
 
     if (Auth::attempt($credentials, $request->has('remember'))) {
         $request->session()->regenerate();
+
         return Auth::user()->role === 'admin' ? redirect()->intended('/admin/dashboard') : redirect()->intended('/');
     }
 
     return back()->withErrors(['email' => 'អ៊ីមែល ឬលេខកូដសម្ងាត់របស់អ្នកមិនត្រឹមត្រូវឡើយ។'])->onlyInput('email');
-});
+})->middleware('throttle:5,1');
 
 // ២. ទំព័រចុះឈ្មោះសមាជិកថ្មី (Register)
 Route::get('/register', function () {
@@ -78,14 +98,15 @@ Route::post('/register', function (Request $request) {
         'password' => ['required', 'string', 'min:8', 'confirmed'],
     ]);
 
-    $user = \App\Models\User::create([
+    $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
-        'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+        'password' => Hash::make($request->password),
         'role' => 'customer',
     ]);
 
     Auth::login($user);
+
     return redirect('/');
 });
 
@@ -94,18 +115,18 @@ Route::post('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
+
     return redirect('/');
 })->name('logout');
-
 
 /* ==========================================================================
    🛒 PROTECTED USER ROUTES (លុះត្រាតែ Login រួចរាល់ទើបអាចចូលបញ្ជាទិញបាន)
    ========================================================================== */
-// 🟢 សម្អាតរួចរាល់៖ ប្រមូលផ្តុំកូដដែលស្ទួនគ្នាបញ្ចូលគ្នាតែមួយ និងតម្រង់មុខងាររត់ទៅកាន់ SeedController ឱ្យស្របតាមកូដស្នូល
+
 Route::middleware(['auth'])->group(function () {
 
     // ផ្លូវបើកទំព័រត្រួតពិនិត្យវិក្កយបត្រជំហានចុងក្រោយ (GET)
-    Route::get('/checkout', function() {
+    Route::get('/checkout', function () {
         return view('checkout');
     })->name('checkout');
 
@@ -116,17 +137,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/my-orders', [SeedController::class, 'myOrders'])->name('my.orders');
 });
 
-
 /* ==========================================================================
-   🛡️ PROTECTED ADMIN ROUTES (ផ្ទាំងគ្រប់គ្រងខាងក្រោយ ស្ថិតក្រោមច្បាប់ការពាររបស់ AdminMiddleware)
+    PROTECTED ADMIN ROUTES (AdminMiddleware)
    ========================================================================== */
-Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
+Route::middleware([AdminMiddleware::class])->group(function () {
 
     // ១. ទំព័រផ្ទាំងគ្រប់គ្រងទូទៅគណនាស្ថិតិ Dynamic (Dashboard)
     Route::get('/admin/dashboard', [SeedController::class, 'adminDashboard']);
 
     // ២. គ្រប់គ្រងទិន្នន័យគ្រាប់ពូជ (Seeds Management)
     Route::get('/admin/seeds', [SeedController::class, 'index']);
+    Route::get('/admin/seeds/bulk-update', [SeedController::class, 'adminBulkEditSeeds'])->name('admin.seeds.bulk_edit');
+    Route::post('/admin/seeds/bulk-update', [SeedController::class, 'adminBulkUpdateSeeds'])->name('admin.seeds.bulk_update');
     Route::get('/admin/seeds/create', [SeedController::class, 'create']);
     Route::post('/admin/seeds/store', [SeedController::class, 'store']);
     Route::get('/admin/seeds/edit/{id}', [SeedController::class, 'edit']);
@@ -145,4 +167,43 @@ Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function
     Route::get('/admin/orders', [SeedController::class, 'adminOrders']);
     Route::post('/admin/orders/status/{id}', [SeedController::class, 'updateOrderStatus']);
     Route::delete('/admin/orders/delete/{id}', [SeedController::class, 'destroyOrder']);
+    Route::get('/admin/orders/packing-manifest', [SeedController::class, 'packingManifest']);
+
+    // ៥. គ្រប់គ្រងប្រភេទបន្លែ (Admin Categories Management)
+    Route::get('/admin/categories', [SeedController::class, 'adminCategories']);
+    Route::post('/admin/categories/store', [SeedController::class, 'storeCategory']);
+    Route::put('/admin/categories/update/{id}', [SeedController::class, 'updateCategory']);
+    Route::delete('/admin/categories/delete/{id}', [SeedController::class, 'destroyCategory']);
+
+    // ៦. គ្រប់គ្រងបញ្ជីអតិថិជន (Admin Customers Management)
+    Route::get('/admin/customers', [SeedController::class, 'adminCustomers']);
+    Route::post('/admin/customers/role/{id}', [SeedController::class, 'updateCustomerRole'])->name('admin.customers.update_role');
+
+    // ៧. បន្ថែមស្តុកបន្ទាន់ (Quick Restock)
+    Route::post('/admin/seeds/quick-restock/{id}', [SeedController::class, 'quickRestock']);
+
+    // ៨. ទាញយកទិន្នន័យជារបាយការណ៍ CSV (CSV Exports)
+    Route::get('/admin/orders/export', [SeedController::class, 'exportOrdersCsv']);
+    Route::get('/admin/seeds/export', [SeedController::class, 'exportSeedsCsv']);
+
+    // ៩. បោះពុម្ពស្លាក Sticker គ្រាប់ពូជជាសន្លឹក (Print Packaging Labels)
+    Route::get('/admin/seeds/print-labels/{id}', [SeedController::class, 'printLabels']);
+
+    // ១០. គ្រប់គ្រងមតិយោបល់ និងការវាយតម្លៃរបស់អតិថិជន (Admin Reviews Management)
+    Route::get('/admin/reviews', [SeedController::class, 'adminReviews']);
+    Route::delete('/admin/reviews/delete/{id}', [SeedController::class, 'destroyReview']);
+
+    // ១១. គ្រប់គ្រងលេខកូដបញ្ចុះតម្លៃ (Admin Coupons Management)
+    Route::get('/admin/coupons', [SeedController::class, 'adminCoupons']);
+    Route::post('/admin/coupons', [SeedController::class, 'adminStoreCoupon']);
+    Route::post('/admin/coupons/{id}/toggle', [SeedController::class, 'adminToggleCoupon']);
+    Route::delete('/admin/coupons/{id}', [SeedController::class, 'adminDestroyCoupon']);
+
+    // ១២. ការកំណត់ទូទៅសហគមន៍ & ប្រព័ន្ធ (Admin Settings)
+    Route::get('/admin/settings', [SeedController::class, 'adminSettings'])->name('admin.settings');
+    Route::post('/admin/settings', [SeedController::class, 'adminUpdateSettings'])->name('admin.settings.update');
+
+    // ១៣. របាយការណ៍ហិរញ្ញវត្ថុ និងស្ថិតិលក់កម្រិតខ្ពស់ (Admin Reports)
+    Route::get('/admin/reports', [SeedController::class, 'adminReports'])->name('admin.reports');
+    Route::get('/admin/reports/export', [SeedController::class, 'adminExportReportsCsv'])->name('admin.reports.export');
 });

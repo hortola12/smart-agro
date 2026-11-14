@@ -95,6 +95,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($traceabilities->hasPages())
+                <div class="p-3 border-top d-flex justify-content-end bg-white">
+                    {{ $traceabilities->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -146,17 +152,30 @@
                                         value="{{ old('watering_schedule', $trace->watering_schedule ?? 'ស្រោចទឹករាល់ព្រឹក') }}">
                                 </div>
 
+                                @php
+                                    $modHarvest = old('harvest_date', $trace->harvest_date);
+                                    try {
+                                        if ($modHarvest) $modHarvest = \Carbon\Carbon::parse($modHarvest)->format('Y-m-d');
+                                    } catch (\Exception $e) {}
+                                    if (!$modHarvest) $modHarvest = date('Y-m-d');
+
+                                    $modExpiry = old('expiry_date', $trace->expiry_date);
+                                    try {
+                                        if ($modExpiry) $modExpiry = \Carbon\Carbon::parse($modExpiry)->format('Y-m-d');
+                                    } catch (\Exception $e) {}
+                                    if (!$modExpiry) $modExpiry = date('Y-m-d', strtotime('+1 year'));
+                                @endphp
                                 <div class="col-md-6 mb-2">
-                                    <label class="form-label small fw-bold">កាលបរិច្ឆេទប្រមូលផល <span class="text-danger">*</span></label>
-                                    <input type="text" name="harvest_date" class="form-control @error('harvest_date') is-invalid @enderror" placeholder="ឧ. 2026-05-29 ឬ ចុងខែមករា" value="{{ old('harvest_date', $trace->harvest_date) }}" required>
+                                    <label class="form-label small fw-bold"><i class="fa-solid fa-calendar-check text-success me-1"></i>កាលបរិច្ឆេទប្រមូលផល <span class="text-danger">*</span></label>
+                                    <input type="date" name="harvest_date" class="form-control font-monospace @error('harvest_date') is-invalid @enderror" value="{{ $modHarvest }}" required>
                                     @error('harvest_date')
                                         <div class="invalid-feedback fw-bold small">{{ $message }}</div>
                                     @enderror
                                 </div>
 
                                 <div class="col-md-6 mb-2">
-                                    <label class="form-label small fw-bold">កាលបរិច្ឆេទផុតកំណត់ <span class="text-danger">*</span></label>
-                                    <input type="text" name="expiry_date" class="form-control @error('expiry_date') is-invalid @enderror" placeholder="ឧ. 2027-05-29 ឬ រយៈពេល ១ឆ្នាំ" value="{{ old('expiry_date', $trace->expiry_date) }}" required>
+                                    <label class="form-label small fw-bold"><i class="fa-solid fa-calendar-xmark text-danger me-1"></i>កាលបរិច្ឆេទផុតកំណត់ <span class="text-danger">*</span></label>
+                                    <input type="date" name="expiry_date" class="form-control font-monospace @error('expiry_date') is-invalid @enderror" value="{{ $modExpiry }}" required>
                                     @error('expiry_date')
                                         <div class="invalid-feedback fw-bold small">{{ $message }}</div>
                                     @enderror

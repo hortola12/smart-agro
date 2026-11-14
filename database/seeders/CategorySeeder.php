@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Category;
+use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
@@ -27,5 +27,5 @@ class CategorySeeder extends Seeder
     }
 }
 
-//ជំហានទី ៣៖ រាល់ពេលចង់ឱ្យវាហោះចូល Database ទាំងអស់ក្នុងពេលតែ ១ វិនាទី សូមរត់បញ្ជានេះក្នុង Terminal៖
+// ជំហានទី ៣៖ រាល់ពេលចង់ឱ្យវាហោះចូល Database ទាំងអស់ក្នុងពេលតែ ១ វិនាទី សូមរត់បញ្ជានេះក្នុង Terminal៖
 // php artisan db:seed --class=CategorySeeder

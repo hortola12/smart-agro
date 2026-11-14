@@ -11,9 +11,19 @@
 <body>
 
     <div class="auth-premium-card">
+        <!-- Top Back to Home Navigation -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{{ url('/') }}" class="text-decoration-none text-muted small fw-bold d-inline-flex align-items-center hover-success" style="transition: all 0.2s ease;">
+                <i class="fa-solid fa-arrow-left-long me-2"></i> ត្រឡប់ទៅទំព័រដើម (Home)
+            </a>
+            <a href="{{ url('/') }}" class="d-flex align-items-center text-success text-decoration-none fw-bold small">
+                <i class="fa-solid fa-seedling me-1"></i> Grow2Growth
+            </a>
+        </div>
+
         <div class="auth-header-wrapper">
             <div class="auth-brand-badge">
-                <i class="fa-solid fa-leaf me-1.5"></i> GROW2GROW PLATFORM
+                <i class="fa-solid fa-leaf me-1.5"></i> GROW2GROWTH PLATFORM
             </div>
             <h2 class="auth-main-title">ចូលប្រើប្រាស់ប្រព័ន្ធ</h2>
             <p class="auth-desc-text">សូមបំពេញព័ត៌មានគណនីរបស់អ្នក ដើម្បីចូលទៅកាន់ផ្ទាំងគ្រប់គ្រង។</p>
